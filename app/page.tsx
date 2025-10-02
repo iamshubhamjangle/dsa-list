@@ -244,7 +244,14 @@ export default function StudyPage() {
         resetProgress={resetProgress}
       />
 
-      <Progress questions={questions} progress={progress} />
+      <Progress
+        questions={
+          studyOptions.starred
+            ? questions.filter((q) => progress[q.id]?.starred)
+            : questions
+        }
+        progress={progress}
+      />
 
       <Questions
         questions={questions}
