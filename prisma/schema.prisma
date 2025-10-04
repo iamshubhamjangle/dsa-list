@@ -49,6 +49,7 @@ model User {
     accounts  Account[]
     sessions  Session[]
     questions Question[]
+    tags      Tag[]
 }
 
 model VerificationToken {
@@ -60,27 +61,53 @@ model VerificationToken {
 }
 
 model Question {
-    id         String   @id @default(cuid())
+    id         String    @id @default(cuid())
     name       String
     url        String
     difficulty String // "Easy" | "Medium" | "Hard"
-    tags       String[] // PostgreSQL array
-    completed  Boolean  @default(false)
-    starred    Boolean  @default(false)
+    completed  Boolean   @default(false)
+    starred    Boolean   @default(false)
+    notes      String?   @db.Text
+    timeSpent  Int? // in minutes
+    solvedAt   DateTime?
     userId     String
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    questionTags QuestionTag[]
 
     @@index([userId])
+    @@index([difficulty])
+    @@index([completed])
+    @@index([starred])
 }
 
 model Tag {
-    id     String  @id @default(cuid())
-    name   String  @unique
-    color  String
-    userId String?
+    id          String   @id @default(cuid())
+    name        String
+    color       String
+    description String?
+    userId      String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
+    user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+    questionTags QuestionTag[]
+
+    @@unique([name, userId]) // Allow same tag name for different users
     @@index([userId])
+}
+
+model QuestionTag {
+    id         String @id @default(cuid())
+    questionId String
+    tagId      String
+
+    question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+    @@unique([questionId, tagId])
+    @@index([questionId])
+    @@index([tagId])
 }

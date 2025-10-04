@@ -3,15 +3,34 @@ export interface Question {
   name: string;
   url: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  tags: string[];
   completed: boolean;
   starred: boolean;
+  notes?: string;
+  timeSpent?: number;
+  solvedAt?: Date;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tags?: Tag[];
+  questionTags?: QuestionTag[];
 }
 
 export interface Tag {
   id: string;
   name: string;
   color: string;
+  description?: string;
+  userId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface QuestionTag {
+  id: string;
+  questionId: string;
+  tagId: string;
+  question?: Question;
+  tag?: Tag;
 }
 
 export interface UploadedData {
