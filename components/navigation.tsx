@@ -2,13 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Github, Settings } from "lucide-react";
+import { BookOpen, Github, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ModeToggle } from "./ui/mode-toggle";
+import { useSession, signOut } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import toast from "react-hot-toast";
 
 export function Navigation() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const navItems = [
     {
@@ -37,27 +47,62 @@ export function Navigation() {
             <h1 className="text-md font-extrabold">DSA List</h1>
           </div>
           <div className="flex space-x-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
+            {session &&
+              navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
 
-              return (
-                <Button
-                  key={item.href}
-                  variant={isActive ? "default" : "ghost"}
-                  size="lg"
-                  asChild
-                >
-                  <Link
-                    href={item.href}
+                return (
+                  <Button
+                    key={item.href}
+                    variant={isActive ? "default" : "ghost"}
+                    size="lg"
+                    asChild
+                  >
+                    <Link
+                      href={item.href}
+                      className="flex items-center space-x-2"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </Button>
+                );
+              })}
+
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="lg"
                     className="flex items-center space-x-2"
                   >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Link>
-                </Button>
-              );
-            })}
+                    <User className="h-4 w-4" />
+                    <span>{session.user?.name || "User"}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem disabled>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{session.user?.email}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                   <DropdownMenuItem onClick={() => {
+                     toast.success("Signed out successfully!");
+                     signOut();
+                   }}>
+                     <LogOut className="mr-2 h-4 w-4" />
+                     <span>Sign out</span>
+                   </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link href="/auth/signin">
+                <Button size="lg">Sign In</Button>
+              </Link>
+            )}
+
             <ModeToggle />
             <Link
               href={"https://github.com/iamshubhamjangle/dsa-list"}
