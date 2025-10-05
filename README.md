@@ -1,3 +1,8 @@
+- Get, update, delete all questions
+- Get, update, delete all tags
+- Upload - BatchCreateQuestions
+- tag color should be enum with fixed colors on FE/BE
+
 # DSA List - Coding Problem Management Tool
 
 An application for studying and managing coding problems with advanced features like tagging, progress tracking, update/delete questions, import export bulk questions. It's time to build your own problem set.

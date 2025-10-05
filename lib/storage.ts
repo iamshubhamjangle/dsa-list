@@ -8,106 +8,141 @@ const STORAGE_KEYS = {
 } as const;
 
 // Default tags
+const currentDate = new Date();
+
 export const DEFAULT_TAGS: Tag[] = [
-  {
-    id: "default",
-    name: "Default",
-    color: "bg-gray-500",
-  },
   {
     id: "tag-1755331013001",
     name: "Arrays",
     color: "bg-green-200",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331013002",
     name: "Heap",
     color: "bg-green-200",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331013586",
     name: "Two Pointers",
     color: "bg-green-200",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331023426",
     name: "Sliding Window",
     color: "bg-green-200",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331030842",
     name: "Stack",
     color: "bg-green-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331042314",
     name: "Binary Search",
     color: "bg-green-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331197882",
     name: "Linked List",
     color: "bg-green-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331207258",
     name: "Trees",
     color: "bg-green-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331227874",
     name: "Backtracking",
     color: "bg-red-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331234297",
     name: "Tries",
     color: "bg-red-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331241474",
     name: "Graphs",
     color: "bg-red-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331246026",
     name: "Advanced Graphs",
     color: "bg-red-300",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331250530",
     name: "DP 1D",
     color: "bg-red-400",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331254538",
     name: "DP 2D",
     color: "bg-red-400",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331260530",
     name: "Greedy",
     color: "bg-red-400",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331264842",
     name: "Intervals",
     color: "bg-red-400",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331275315",
     name: "Segment Tree",
     color: "bg-red-500",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331271499",
     name: "Math",
     color: "bg-red-500",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
   {
     id: "tag-1755331275314",
     name: "Bit Manipulation",
     color: "bg-red-500",
+    createdAt: currentDate,
+    updatedAt: currentDate,
   },
 ];
 

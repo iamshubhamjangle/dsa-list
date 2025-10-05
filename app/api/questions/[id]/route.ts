@@ -118,44 +118,80 @@ export async function PUT(
     if (notes !== undefined) updateData.notes = notes;
     if (timeSpent !== undefined) updateData.timeSpent = timeSpent;
 
-    // Update question and handle tags
-    const question = await prisma.$transaction(async (tx) => {
-      // Update the question
-      await tx.question.update({
-        where: { id: params.id },
-        data: updateData,
-      });
+    // If no fields provided and tagIds is undefined, nothing to change
+    if (Object.keys(updateData).length === 0 && tagIds === undefined) {
+      return NextResponse.json(
+        { message: "No fields provided for update" },
+        { status: 400 }
+      );
+    }
 
-      // Handle tag updates if tagIds provided
-      if (tagIds !== undefined) {
-        // Remove existing question-tag relationships
-        await tx.questionTag.deleteMany({
-          where: { questionId: params.id },
-        });
-
-        // Create new question-tag relationships
-        if (tagIds.length > 0) {
-          await tx.questionTag.createMany({
-            data: tagIds.map((tagId: string) => ({
-              questionId: params.id,
-              tagId,
-            })),
+    // Update question and handle tags inside a transaction while enforcing ownership.
+    // We use updateMany when updating fields to ensure the user owns the question.
+    let question;
+    try {
+      question = await prisma.$transaction(async (tx) => {
+        // If there are fields to update, perform an ownership-enforced updateMany
+        if (Object.keys(updateData).length > 0) {
+          const res = await tx.question.updateMany({
+            where: { id: params.id, userId: session.user.id },
+            data: updateData,
           });
-        }
-      }
 
-      // Return the updated question with tags
-      return await tx.question.findUnique({
-        where: { id: params.id },
-        include: {
-          questionTags: {
-            include: {
-              tag: true,
+          if (res.count === 0) {
+            // Not found or not owned
+            throw new Error("not_found");
+          }
+        } else {
+          // No field updates, but we still need to enforce ownership before tag changes
+          const owned = await tx.question.findFirst({
+            where: { id: params.id, userId: session.user.id },
+            select: { id: true },
+          });
+          if (!owned) throw new Error("not_found");
+        }
+
+        // Handle tag updates if tagIds provided
+        if (tagIds !== undefined) {
+          // Remove existing question-tag relationships
+          await tx.questionTag.deleteMany({
+            where: { questionId: params.id },
+          });
+
+          // Create new question-tag relationships
+          if (tagIds.length > 0) {
+            await tx.questionTag.createMany({
+              data: tagIds.map((tagId: string) => ({
+                questionId: params.id,
+                tagId,
+              })),
+            });
+          }
+        }
+
+        // Return the updated question with tags
+        return await tx.question.findUnique({
+          where: { id: params.id },
+          include: {
+            questionTags: {
+              include: {
+                tag: true,
+              },
             },
           },
-        },
+        });
       });
-    });
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const e: any = err;
+      if (e?.message === "not_found") {
+        return NextResponse.json(
+          { message: "Question not found" },
+          { status: 404 }
+        );
+      }
+      throw err; // will be caught by outer catch
+    }
 
     // Transform the data to include tags array
     const questionWithTags = {
@@ -200,10 +236,18 @@ export async function DELETE(
       );
     }
 
-    // Delete the question (cascade will handle questionTags)
-    await prisma.question.delete({
-      where: { id: params.id },
+    // Delete the question enforcing ownership. Using deleteMany ensures we only
+    // delete if the question belongs to the current user.
+    const deleted = await prisma.question.deleteMany({
+      where: { id: params.id, userId: session.user.id },
     });
+
+    if (deleted.count === 0) {
+      return NextResponse.json(
+        { message: "Question not found" },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       { message: "Question deleted successfully" },

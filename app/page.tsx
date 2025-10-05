@@ -179,7 +179,9 @@ export default function StudyPage() {
 
   const getQuestionsForTag = (tagId: string) => {
     // Ensure tagId and q.tags are both strings and compared as such
-    let tagQuestions = questions.filter((q) => q.tags.includes(tagId));
+    let tagQuestions = questions.filter((q) =>
+      q.tags?.some((tag) => tag.id === tagId)
+    );
 
     // Filter by starred if needed
     if (studyOptions.starred) {

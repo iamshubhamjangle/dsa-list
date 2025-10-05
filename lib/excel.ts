@@ -1,6 +1,8 @@
 import { Question, UploadedData } from "./types";
 
 export const processExcelData = (data: UploadedData[]): Question[] => {
+  return [];
+  /*
   return data.map((row, index) => {
     // Use the title from CSV instead of generating from URL
     const questionName = row.title.trim();
@@ -25,10 +27,12 @@ export const processExcelData = (data: UploadedData[]): Question[] => {
       completed: false,
       starred: false,
     };
-  });
+  });*/
 };
 
 export const parseCSV = (csvText: string): UploadedData[] => {
+  return [];
+  /*
   const lines = csvText.split("\n");
   const headers = lines[0].split(",").map((h) => h.trim());
 
@@ -56,4 +60,5 @@ export const parseCSV = (csvText: string): UploadedData[] => {
   }
 
   return data;
+  */
 };

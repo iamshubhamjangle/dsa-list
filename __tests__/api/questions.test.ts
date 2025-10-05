@@ -309,6 +309,9 @@ describe("/api/questions/[id]", () => {
       mockPrisma.$transaction.mockImplementation(async (callback) => {
         return await callback(mockPrisma);
       });
+      (mockPrisma.question.updateMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
       (mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(
         updatedQuestion
       );
@@ -335,6 +338,59 @@ describe("/api/questions/[id]", () => {
 
       expect(response.status).toBe(200);
       expect(data.question.name).toBe("Updated Two Sum");
+    });
+
+    it("should partially update a question when only name is provided", async () => {
+      const existingQuestion = {
+        id: "q1",
+        name: "Two Sum",
+        url: "https://leetcode.com/problems/two-sum/",
+        difficulty: "Easy",
+        completed: false,
+        starred: false,
+        notes: null,
+        timeSpent: null,
+        solvedAt: null,
+        userId: "user-1",
+      };
+
+      const updatedQuestion = {
+        ...existingQuestion,
+        name: "Two Sum Renamed",
+        questionTags: [],
+      };
+
+      (mockPrisma.question.findFirst as jest.Mock).mockResolvedValue(
+        existingQuestion
+      );
+      mockPrisma.$transaction.mockImplementation(async (callback) => {
+        return await callback(mockPrisma);
+      });
+      (mockPrisma.question.updateMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
+      (mockPrisma.question.findUnique as jest.Mock).mockResolvedValue(
+        updatedQuestion
+      );
+
+      const params = { id: "q1" };
+      const request = new NextRequest(
+        "http://localhost:3000/api/questions/q1",
+        {
+          method: "PUT",
+          body: JSON.stringify({ name: "Two Sum Renamed" }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const response = await PUT(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data.question.name).toBe("Two Sum Renamed");
+      // Ensure other fields remain unchanged
+      expect(data.question.url).toBe(existingQuestion.url);
+      expect(data.question.difficulty).toBe(existingQuestion.difficulty);
     });
 
     it("should return 404 for non-existent question", async () => {
@@ -372,9 +428,9 @@ describe("/api/questions/[id]", () => {
       (mockPrisma.question.findFirst as jest.Mock).mockResolvedValue(
         existingQuestion
       );
-      (mockPrisma.question.delete as jest.Mock).mockResolvedValue(
-        existingQuestion
-      );
+      (mockPrisma.question.deleteMany as jest.Mock).mockResolvedValue({
+        count: 1,
+      });
 
       const params = { id: "q1" };
       const request = new NextRequest(
@@ -407,6 +463,51 @@ describe("/api/questions/[id]", () => {
 
       expect(response.status).toBe(404);
       expect(data.message).toBe("Question not found");
+    });
+
+    it("should return 401 for unauthenticated user on DELETE", async () => {
+      (mockGetServerSession as jest.Mock).mockResolvedValue(null);
+
+      const params = { id: "q1" };
+      const request = new NextRequest(
+        "http://localhost:3000/api/questions/q1",
+        {
+          method: "DELETE",
+        }
+      );
+
+      const response = await DELETE(request, { params });
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.message).toBe("Unauthorized");
+    });
+  });
+
+  describe("POST /api/questions unauthenticated", () => {
+    it("should return 401 when not authenticated", async () => {
+      (mockGetServerSession as jest.Mock).mockResolvedValue(null);
+
+      const requestBody = {
+        name: "Add Two Numbers",
+        url: "https://leetcode.com/problems/add-two-numbers/",
+        difficulty: "Medium",
+        tagIds: ["t2"],
+      };
+
+      const request = new NextRequest("http://localhost:3000/api/questions", {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const response = await POST(request);
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.message).toBe("Unauthorized");
     });
   });
 });

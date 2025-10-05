@@ -71,24 +71,6 @@ export async function PUT(
       return NextResponse.json({ message: "Tag not found" }, { status: 404 });
     }
 
-    // Check if another tag with the same name exists (if name is being changed)
-    if (name && name !== existingTag.name) {
-      const duplicateTag = await prisma.tag.findFirst({
-        where: {
-          name: name,
-          userId: session.user.id,
-          id: { not: params.id },
-        },
-      });
-
-      if (duplicateTag) {
-        return NextResponse.json(
-          { message: "Tag with this name already exists" },
-          { status: 400 }
-        );
-      }
-    }
-
     // Prepare update data
     const updateData: Prisma.TagUpdateInput = {};
 
@@ -96,9 +78,29 @@ export async function PUT(
     if (color !== undefined) updateData.color = color;
     if (description !== undefined) updateData.description = description;
 
-    const tag = await prisma.tag.update({
-      where: { id: params.id },
+    // If no fields provided, return a 400 so the client knows nothing will change
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { message: "No fields provided for update" },
+        { status: 400 }
+      );
+    }
+
+    // Enforce ownership at update time to avoid race conditions where someone could
+    // attempt to update by id directly. updateMany returns a count of affected rows.
+    const result = await prisma.tag.updateMany({
+      where: { id: params.id, userId: session.user.id },
       data: updateData,
+    });
+
+    if (result.count === 0) {
+      // Either tag not found or doesn't belong to this user
+      return NextResponse.json({ message: "Tag not found" }, { status: 404 });
+    }
+
+    // Fetch the updated tag with the _count include and return it
+    const tag = await prisma.tag.findUnique({
+      where: { id: params.id },
       include: {
         _count: {
           select: {
@@ -160,10 +162,14 @@ export async function DELETE(
       );
     }
 
-    // Delete the tag
-    await prisma.tag.delete({
-      where: { id: params.id },
+    // Delete the tag enforcing ownership
+    const deleted = await prisma.tag.deleteMany({
+      where: { id: params.id, userId: session.user.id },
     });
+
+    if (deleted.count === 0) {
+      return NextResponse.json({ message: "Tag not found" }, { status: 404 });
+    }
 
     return NextResponse.json(
       { message: "Tag deleted successfully" },

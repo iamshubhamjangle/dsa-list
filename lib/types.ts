@@ -38,6 +38,9 @@ export interface UploadedData {
   url: string;
   difficulty: string;
   tags: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface StudyOptions {
