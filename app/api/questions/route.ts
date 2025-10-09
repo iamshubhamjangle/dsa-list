@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+
+import { prisma } from "@/lib/db";
+import { authOptions } from "@/lib/auth";
+import { QuestionDTO } from "@/lib/types";
 
 // GET /api/questions - Get all questions for the authenticated user
 export async function GET(request: NextRequest) {
@@ -57,13 +59,30 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Transform the data to include tags array
-    const questionsWithTags = questions.map((question) => ({
-      ...question,
-      tags: question.questionTags.map((qt) => qt.tag),
-    }));
+    // Transform to QuestionDTO
+    const questionsDTO = questions.map(
+      (question): QuestionDTO => ({
+        id: question.id,
+        name: question.name,
+        url: question.url,
+        difficulty: question.difficulty as "Easy" | "Medium" | "Hard",
+        completed: question.completed,
+        starred: question.starred,
+        notes: question.notes ?? undefined,
+        timeSpent: question.timeSpent ?? undefined,
+        solvedAt: question.solvedAt ? question.solvedAt.toISOString() : null,
+        createdAt: question.createdAt.toISOString(),
+        updatedAt: question.updatedAt.toISOString(),
+        tags: question.questionTags.map((qt) => ({
+          id: qt.tag.id,
+          name: qt.tag.name,
+          color: qt.tag.color,
+          description: qt.tag.description ?? undefined,
+        })),
+      })
+    );
 
-    return NextResponse.json({ questions: questionsWithTags });
+    return NextResponse.json({ questions: questionsDTO });
   } catch (error) {
     console.error("Error fetching questions:", error);
     return NextResponse.json(

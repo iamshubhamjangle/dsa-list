@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation";
 import { ThemeProvider } from "@/components/provider/theme-provider";
 import { SessionProviderWrapper } from "@/components/provider/session-provider";
 import ToastProvider from "@/components/provider/toast-provider";
+import { QueryProviderWrapper } from "@/components/provider/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,11 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <SessionProviderWrapper>
-          <ThemeProvider>
-            <Navigation />
-            <main className="min-h-screen">{children}</main>
-            <ToastProvider />
-          </ThemeProvider>
+          <QueryProviderWrapper>
+            <ThemeProvider>
+              <Navigation />
+              <main className="min-h-screen">{children}</main>
+              <ToastProvider />
+            </ThemeProvider>
+          </QueryProviderWrapper>
         </SessionProviderWrapper>
       </body>
     </html>
