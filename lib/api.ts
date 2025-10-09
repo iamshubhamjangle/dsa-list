@@ -25,4 +25,40 @@ export async function fetchQuestions(params?: {
   return data.questions as QuestionDTO[];
 }
 
-// Future: Add mutation functions (createQuestion, updateQuestion, etc.) and cache helpers here for scalability.
+export async function toggleQuestionComplete(
+  id: string,
+  completed: boolean
+): Promise<QuestionDTO> {
+  const res = await fetch(`/api/questions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ completed }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update question");
+  }
+
+  const data = await res.json();
+  return data.question;
+}
+
+export async function toggleQuestionStarred(
+  id: string,
+  starred: boolean
+): Promise<QuestionDTO> {
+  const res = await fetch(`/api/questions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ starred }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update question");
+  }
+
+  const data = await res.json();
+  return data.question;
+}

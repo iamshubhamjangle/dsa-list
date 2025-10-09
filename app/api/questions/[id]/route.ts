@@ -7,10 +7,11 @@ import { Prisma } from "@prisma/client";
 // GET /api/questions/[id] - Get a specific question
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -18,7 +19,7 @@ export async function GET(
 
     const question = await prisma.question.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
       include: {
@@ -56,10 +57,11 @@ export async function GET(
 // PUT /api/questions/[id] - Update a specific question
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -77,10 +79,13 @@ export async function PUT(
       tagIds,
     } = body;
 
+    console.log("->>>>>>>>>>>>>>>>>>>>>> PUT body:", body);
+    console.log("->>>>>>>>>>>>>>>>>>>>>> PUT params:", id);
+
     // Check if question exists and belongs to user
     const existingQuestion = await prisma.question.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     });
@@ -134,7 +139,7 @@ export async function PUT(
         // If there are fields to update, perform an ownership-enforced updateMany
         if (Object.keys(updateData).length > 0) {
           const res = await tx.question.updateMany({
-            where: { id: params.id, userId: session.user.id },
+            where: { id, userId: session.user.id },
             data: updateData,
           });
 
@@ -145,7 +150,7 @@ export async function PUT(
         } else {
           // No field updates, but we still need to enforce ownership before tag changes
           const owned = await tx.question.findFirst({
-            where: { id: params.id, userId: session.user.id },
+            where: { id, userId: session.user.id },
             select: { id: true },
           });
           if (!owned) throw new Error("not_found");
@@ -155,14 +160,14 @@ export async function PUT(
         if (tagIds !== undefined) {
           // Remove existing question-tag relationships
           await tx.questionTag.deleteMany({
-            where: { questionId: params.id },
+            where: { questionId: id },
           });
 
           // Create new question-tag relationships
           if (tagIds.length > 0) {
             await tx.questionTag.createMany({
               data: tagIds.map((tagId: string) => ({
-                questionId: params.id,
+                questionId: id,
                 tagId,
               })),
             });
@@ -171,7 +176,7 @@ export async function PUT(
 
         // Return the updated question with tags
         return await tx.question.findUnique({
-          where: { id: params.id },
+          where: { id },
           include: {
             questionTags: {
               include: {
@@ -212,10 +217,11 @@ export async function PUT(
 // DELETE /api/questions/[id] - Delete a specific question
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -224,7 +230,7 @@ export async function DELETE(
     // Check if question exists and belongs to user
     const existingQuestion = await prisma.question.findFirst({
       where: {
-        id: params.id,
+        id,
         userId: session.user.id,
       },
     });
@@ -239,7 +245,7 @@ export async function DELETE(
     // Delete the question enforcing ownership. Using deleteMany ensures we only
     // delete if the question belongs to the current user.
     const deleted = await prisma.question.deleteMany({
-      where: { id: params.id, userId: session.user.id },
+      where: { id, userId: session.user.id },
     });
 
     if (deleted.count === 0) {

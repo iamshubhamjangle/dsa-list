@@ -1,29 +1,70 @@
 import { QuestionDTO } from "@/lib/types";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CheckCircle,
-  Circle,
-  Star,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+import { CheckCircle, Circle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toggleQuestionComplete, toggleQuestionStarred } from "@/lib/api";
 
 interface RenderQuestionsListProps {
   questions: QuestionDTO[];
 }
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
-  function toggleQuestionCompleted(questionId: string) {
-    // Implement the logic to toggle the completed status of the question
-    console.log("Toggling completed for question ID:", questionId);
+  const queryClient = useQueryClient();
+
+  const completeMutation = useMutation({
+    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
+      toggleQuestionComplete(id, completed),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    },
+  });
+
+  const starredMutation = useMutation({
+    mutationFn: ({ id, starred }: { id: string; starred: boolean }) =>
+      toggleQuestionStarred(id, starred),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    },
+  });
+
+  function isCompletedMutating(questionId: string): boolean {
+    return (
+      completeMutation.isPending &&
+      completeMutation.variables?.id === questionId
+    );
   }
 
-  function toggleQuestionStarred(questionId: string) {
-    // Implement the logic to toggle the starred status of the question
-    console.log("Toggling starred for question ID:", questionId);
+  function isStarredMutating(questionId: string): boolean {
+    return (
+      starredMutation.isPending && starredMutation.variables?.id === questionId
+    );
+  }
+
+  function onToggleQuestionCompletedBtnClick(
+    questionId: string,
+    prevValue: boolean
+  ) {
+    if (!questionId) return;
+    completeMutation.mutate({
+      id: questionId,
+      completed: !prevValue,
+    });
+  }
+
+  function onToggleQuestionStarredBtnClick(
+    questionId: string,
+    prevValue: boolean
+  ) {
+    if (!questionId) return;
+    starredMutation.mutate({
+      id: questionId,
+      starred: !prevValue,
+    });
   }
 
   return questions.map((question) => (
@@ -31,12 +72,17 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 flex-1">
           <Button
-            onClick={() => toggleQuestionCompleted(question.id)}
+            onClick={() =>
+              onToggleQuestionCompletedBtnClick(question.id, question.completed)
+            }
             variant="ghost"
             size="sm"
+            disabled={isCompletedMutating(question.id)}
             className="h-8 w-8 p-0 text-muted-foreground hover:text-green-600"
           >
-            {question.completed ? (
+            {isCompletedMutating(question.id) ? (
+              <Spinner className="h-5 w-5" />
+            ) : question.completed ? (
               <CheckCircle className="h-5 w-5 text-green-600" />
             ) : (
               <Circle className="h-5 w-5" />
@@ -44,9 +90,12 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
           </Button>
 
           <Button
-            onClick={() => toggleQuestionStarred(question.id)}
+            onClick={() =>
+              onToggleQuestionStarredBtnClick(question.id, question.starred)
+            }
             variant="ghost"
             size="sm"
+            disabled={isStarredMutating(question.id)}
             className={cn(
               "h-8 w-8 p-0 transition-colors",
               question.starred
@@ -54,9 +103,13 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
                 : "text-muted-foreground hover:text-yellow-500"
             )}
           >
-            <Star
-              className={cn("h-4 w-4", question.starred && "fill-current")}
-            />
+            {isStarredMutating(question.id) ? (
+              <Spinner className="h-4 w-4" />
+            ) : (
+              <Star
+                className={cn("h-4 w-4", question.starred && "fill-current")}
+              />
+            )}
           </Button>
 
           <div className="flex-1">
