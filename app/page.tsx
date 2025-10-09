@@ -14,7 +14,7 @@ import { Header } from "@/components/home/header";
 import { Progress } from "@/components/home/progress";
 import { Questions } from "@/components/home/questions";
 
-export default function StudyPage() {
+export default function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [progress, setProgress] = useState<

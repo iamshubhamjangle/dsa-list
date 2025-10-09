@@ -1,6 +1,5 @@
 Todo:
 
-- Setup react-query
 - Work on GET questions for home page
 - Work on GET tags, GET questions for manage page
 - Work on CRUD tags for manage page
@@ -42,6 +41,46 @@ npm run dev
 ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Database Setup
+
+#### 1. Create/Update your `.env.local` file:
+
+#### 2. Common DATABASE_URL Formats:
+
+**Local PostgreSQL:**
+
+```
+postgresql://postgres:password@localhost:5432/dsa_tracker
+```
+
+**Cloud Database (Supabase, Railway, etc.):**
+
+```
+postgresql://username:password@host:port/database_name
+```
+
+#### 3. Initialize Database:
+
+After fixing your `.env.local`, run these commands:
+
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Push schema to database
+npx prisma db push
+
+# (Optional) View your database
+npx prisma studio
+```
+
+#### 4. Test Database Connection:
+
+```bash
+# Test if Prisma can connect
+npx prisma db pull
+```
 
 ## Tech Stack
 
@@ -115,25 +154,6 @@ Add Two Numbers,https://leetcode.com/problems/add-two-numbers/,Medium,Linked Lis
 - **Category Wise**: Organize questions by tags or show as single list
 - **Fold/Unfold**: Quickly collapse or expand all tag sections
 - **Reset Progress**: Clear all completion and star marks
-
-## Data Persistence
-
-All data is stored in the browser's localStorage:
-
-- **Questions**: Problem list with metadata
-- **Tags**: Custom and default tags with colors
-- **Progress**: Completion status and star marks
-- **Study Options**: User preferences for study mode
-
-## CSV Format Requirements
-
-For successful CSV uploads, ensure your file has:
-
-- **Header row**: `title,url,difficulty,tags`
-- **Title**: Human-readable question name
-- **URL**: Valid LeetCode problem URLs
-- **Difficulty**: One of: Easy, Medium, Hard
-- **Tags**: Comma-separated tag names
 
 ## Contributing
 
