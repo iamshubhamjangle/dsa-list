@@ -1,10 +1,12 @@
-import { QuestionDTO } from "@/lib/types";
+import { CheckCircle, Circle, Star } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Circle, Star } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { cn } from "@/lib/utils";
+import { QuestionDTO } from "@/lib/types";
+import useItemMutation from "@/hooks/useMutation";
 import { toggleQuestionComplete, toggleQuestionStarred } from "@/lib/api";
 
 interface RenderQuestionsListProps {
@@ -12,60 +14,28 @@ interface RenderQuestionsListProps {
 }
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
-  const queryClient = useQueryClient();
+  const [isCompletedMutating, mutateCompleted] = useItemMutation<
+    { id: string; completed: boolean },
+    QuestionDTO
+  >(
+    ({ id, completed }) => toggleQuestionComplete(id, completed),
+    ["questions"]
+  );
 
-  const completeMutation = useMutation({
-    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
-      toggleQuestionComplete(id, completed),
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
-    },
-  });
+  const [isStarredMutating, mutateStarred] = useItemMutation<
+    { id: string; starred: boolean },
+    QuestionDTO
+  >(({ id, starred }) => toggleQuestionStarred(id, starred), ["questions"]);
 
-  const starredMutation = useMutation({
-    mutationFn: ({ id, starred }: { id: string; starred: boolean }) =>
-      toggleQuestionStarred(id, starred),
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
-    },
-  });
-
-  function isCompletedMutating(questionId: string): boolean {
-    return (
-      completeMutation.isPending &&
-      completeMutation.variables?.id === questionId
-    );
-  }
-
-  function isStarredMutating(questionId: string): boolean {
-    return (
-      starredMutation.isPending && starredMutation.variables?.id === questionId
-    );
-  }
-
-  function onToggleQuestionCompletedBtnClick(
-    questionId: string,
-    prevValue: boolean
-  ) {
+  const handleToggleCompleted = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
-    completeMutation.mutate({
-      id: questionId,
-      completed: !prevValue,
-    });
-  }
+    mutateCompleted({ id: questionId, completed: !currentValue });
+  };
 
-  function onToggleQuestionStarredBtnClick(
-    questionId: string,
-    prevValue: boolean
-  ) {
+  const handleToggleStarred = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
-    starredMutation.mutate({
-      id: questionId,
-      starred: !prevValue,
-    });
-  }
+    mutateStarred({ id: questionId, starred: !currentValue });
+  };
 
   return questions.map((question) => (
     <div key={question.id} className="py-3 first:pt-0 last:pb-0">
@@ -73,7 +43,7 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
         <div className="flex items-center space-x-3 flex-1">
           <Button
             onClick={() =>
-              onToggleQuestionCompletedBtnClick(question.id, question.completed)
+              handleToggleCompleted(question.id, question.completed)
             }
             variant="ghost"
             size="sm"
@@ -90,9 +60,7 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
           </Button>
 
           <Button
-            onClick={() =>
-              onToggleQuestionStarredBtnClick(question.id, question.starred)
-            }
+            onClick={() => handleToggleStarred(question.id, question.starred)}
             variant="ghost"
             size="sm"
             disabled={isStarredMutating(question.id)}
