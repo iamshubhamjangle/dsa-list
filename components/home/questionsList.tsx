@@ -4,12 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 import { cn } from "@/lib/utils";
 import { QuestionDTO } from "@/lib/types";
 import { toggleQuestionCompleteApi, toggleQuestionStarredApi } from "@/lib/api";
 import { useStudyOptionsStore } from "@/store/studyOptions";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -18,8 +24,9 @@ interface RenderQuestionsListProps {
 }
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
-  const { showDifficulty, categoryWise } = useStudyOptionsStore();
+  const { showDifficulty, categoryWise, allFolded } = useStudyOptionsStore();
   const queryClient = useQueryClient();
+  const [openAccordions, setOpenAccordions] = useState<string[]>([]);
 
   const completedMutation = useMutation({
     mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
@@ -56,23 +63,34 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
     );
   };
 
-  // Group questions by tags for category view
+  // Group questions by tags for category view with completed count
   const groupedQuestions = useMemo(() => {
-    const groups: Record<string, QuestionDTO[]> = {};
+    const groups: Record<
+      string,
+      { questions: QuestionDTO[]; completed: number; total: number }
+    > = {};
 
     questions.forEach((question) => {
       if (question.tags && question.tags.length > 0) {
         question.tags.forEach((tag) => {
           if (!groups[tag.name]) {
-            groups[tag.name] = [];
+            groups[tag.name] = { questions: [], completed: 0, total: 0 };
           }
-          groups[tag.name].push(question);
+          groups[tag.name].questions.push(question);
+          groups[tag.name].total += 1;
+          if (question.completed) {
+            groups[tag.name].completed += 1;
+          }
         });
       } else {
         if (!groups["Uncategorized"]) {
-          groups["Uncategorized"] = [];
+          groups["Uncategorized"] = { questions: [], completed: 0, total: 0 };
         }
-        groups["Uncategorized"].push(question);
+        groups["Uncategorized"].questions.push(question);
+        groups["Uncategorized"].total += 1;
+        if (question.completed) {
+          groups["Uncategorized"].completed += 1;
+        }
       }
     });
 
@@ -83,6 +101,16 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
     () => Object.keys(groupedQuestions),
     [groupedQuestions]
   );
+
+  // Helps to close all accordions when allFolded is true
+  useEffect(() => {
+    if (allFolded) {
+      setOpenAccordions([]);
+    } else {
+      setOpenAccordions(categories);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allFolded]);
 
   const handleToggleCompleted = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
@@ -169,30 +197,46 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
     </div>
   );
 
-  // Render category-wise view with cards for each category
+  // Render category-wise view with accordion for each category
   if (categoryWise) {
     return (
-      <div className="space-y-4">
+      <Accordion
+        type="multiple"
+        className="space-y-4"
+        value={openAccordions}
+        onValueChange={setOpenAccordions}
+      >
         {categories.map((category) => (
-          <Card key={category} className="gap-0">
-            <CardHeader className="pb-3">
-              <CardTitle className="font-semibold">
-                {category}{" "}
-                <span className="text-muted-foreground font-normal">
-                  ({groupedQuestions[category].length})
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y">
-                {groupedQuestions[category].map((question) =>
-                  renderQuestion(question)
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <AccordionItem
+            key={category}
+            value={category}
+            className="border rounded-lg"
+          >
+            <Card className="border-0 py-0 gap-0">
+              <CardHeader className="py-0 gap-0">
+                <AccordionTrigger className="hover:no-underline">
+                  <CardTitle className="font-semibold text-left">
+                    {category}{" "}
+                    <span className="text-muted-foreground font-normal">
+                      ({groupedQuestions[category].completed}/
+                      {groupedQuestions[category].total})
+                    </span>
+                  </CardTitle>
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent>
+                <CardContent>
+                  <div className="divide-y">
+                    {groupedQuestions[category].questions.map((question) =>
+                      renderQuestion(question)
+                    )}
+                  </div>
+                </CardContent>
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
         ))}
-      </div>
+      </Accordion>
     );
   }
 
