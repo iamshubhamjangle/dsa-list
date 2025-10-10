@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { TAG_COLORS, DEFAULT_TAG_COLOR } from "@/lib/constants";
 
 // GET /api/tags - Get all tags for the authenticated user
 export async function GET() {
@@ -72,10 +73,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate color - default to green if not in allowed list
+    const validColor = (TAG_COLORS as readonly string[]).includes(color)
+      ? color
+      : DEFAULT_TAG_COLOR;
+
     const tag = await prisma.tag.create({
       data: {
         name,
-        color,
+        color: validColor,
         description,
         userId: session.user.id,
       },

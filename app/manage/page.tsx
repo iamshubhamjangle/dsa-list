@@ -1,4 +1,5 @@
 import Header from "@/components/manage/header";
+import Tags from "@/components/manage/tags";
 
 export default function ManagePage() {
   return (
@@ -17,19 +18,7 @@ export default function ManagePage() {
       </div>
 
       {/* Tags Section */}
-      {/* <Tags
-        tags={tags}
-        onUpdateTag={(tag) => {
-          updateTag(tag.id, { name: tag.name, color: tag.color });
-          setTags(getTags());
-        }}
-        onDeleteTag={handleDeleteTag}
-        onReorderTags={(newTags) => {
-          saveTags(newTags);
-          setTags(newTags);
-        }}
-        colorOptions={[]}
-      /> */}
+      <Tags />
 
       {/* Questions Section */}
       {/* <Card>

@@ -108,6 +108,42 @@ export async function fetchTagsApi(): Promise<TagDTO[]> {
   return data.tags;
 }
 
+export async function updateTagApi(
+  id: string,
+  data: {
+    name?: string;
+    color?: string;
+    description?: string;
+  }
+): Promise<TagDTO> {
+  const res = await fetch(`/api/tags/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to update tag");
+  }
+
+  const response = await res.json();
+  return response.tag;
+}
+
+export async function deleteTagApi(id: string): Promise<void> {
+  const res = await fetch(`/api/tags/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to delete tag");
+  }
+}
+
 export async function createQuestionApi(data: {
   name: string;
   url: string;

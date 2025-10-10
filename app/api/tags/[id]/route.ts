@@ -3,14 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { TAG_COLORS, DEFAULT_TAG_COLOR } from "@/lib/constants";
 
 // GET /api/tags/[id] - Get a specific tag
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -18,7 +20,7 @@ export async function GET(
 
     const tag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -47,10 +49,11 @@ export async function GET(
 // PUT /api/tags/[id] - Update a specific tag
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -62,7 +65,7 @@ export async function PUT(
     // Check if tag exists and belongs to user
     const existingTag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
     });
@@ -75,7 +78,12 @@ export async function PUT(
     const updateData: Prisma.TagUpdateInput = {};
 
     if (name !== undefined) updateData.name = name;
-    if (color !== undefined) updateData.color = color;
+    if (color !== undefined) {
+      // Validate color - default to green if not in allowed list
+      updateData.color = (TAG_COLORS as readonly string[]).includes(color)
+        ? color
+        : DEFAULT_TAG_COLOR;
+    }
     if (description !== undefined) updateData.description = description;
 
     // If no fields provided, return a 400 so the client knows nothing will change
@@ -89,7 +97,7 @@ export async function PUT(
     // Enforce ownership at update time to avoid race conditions where someone could
     // attempt to update by id directly. updateMany returns a count of affected rows.
     const result = await prisma.tag.updateMany({
-      where: { id: params.id, userId: session.user.id },
+      where: { id: id, userId: session.user.id },
       data: updateData,
     });
 
@@ -100,7 +108,7 @@ export async function PUT(
 
     // Fetch the updated tag with the _count include and return it
     const tag = await prisma.tag.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: {
         _count: {
           select: {
@@ -123,10 +131,11 @@ export async function PUT(
 // DELETE /api/tags/[id] - Delete a specific tag
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const { id } = await context.params;
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -135,7 +144,7 @@ export async function DELETE(
     // Check if tag exists and belongs to user
     const existingTag = await prisma.tag.findFirst({
       where: {
-        id: params.id,
+        id: id,
         userId: session.user.id,
       },
       include: {
@@ -164,7 +173,7 @@ export async function DELETE(
 
     // Delete the tag enforcing ownership
     const deleted = await prisma.tag.deleteMany({
-      where: { id: params.id, userId: session.user.id },
+      where: { id: id, userId: session.user.id },
     });
 
     if (deleted.count === 0) {

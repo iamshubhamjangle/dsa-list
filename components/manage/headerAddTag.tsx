@@ -11,26 +11,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTagApi } from "@/lib/api";
-import toast from "react-hot-toast";
+import { TAG_COLORS, DEFAULT_TAG_COLOR } from "@/lib/constants";
+import { toast } from "sonner";
 
 const initialNewTag = {
   name: "",
-  color: "bg-blue-500",
+  color: DEFAULT_TAG_COLOR,
 };
-
-const colorOptions = [
-  "bg-blue-500",
-  "bg-green-500",
-  "bg-purple-500",
-  "bg-indigo-500",
-  "bg-red-500",
-  "bg-yellow-500",
-  "bg-pink-500",
-  "bg-gray-500",
-];
 
 const HeaderAddTag = () => {
   const [showAddTag, setShowAddTag] = useState(false);
@@ -88,21 +79,23 @@ const HeaderAddTag = () => {
               disabled={mutation.isPending}
             />
             <div>
-              <label className="block text-sm font-medium mb-2">Color</label>
-              <div className="flex justify-between gap-2">
-                {colorOptions.map((color) => (
+              <Label>Color</Label>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {TAG_COLORS.map((color) => (
                   <button
                     key={color}
-                    onClick={() => setNewTag({ ...newTag, color: color })}
+                    type="button"
+                    onClick={() => setNewTag({ ...newTag, color })}
                     disabled={mutation.isPending}
                     className={cn(
-                      "w-8 h-8 rounded-full border-2 transition-opacity",
-                      color,
+                      "w-10 h-10 rounded-full border-4 transition-all hover:scale-110",
                       newTag.color === color
-                        ? "border-foreground"
-                        : "border-border",
+                        ? "border-foreground ring-2 ring-offset-2 ring-foreground"
+                        : "border-transparent hover:border-muted",
                       mutation.isPending && "opacity-50 cursor-not-allowed"
                     )}
+                    style={{ backgroundColor: color }}
+                    title={color}
                   />
                 ))}
               </div>
