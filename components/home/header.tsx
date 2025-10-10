@@ -1,6 +1,5 @@
 "use client";
 
-import { StudyOptions } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Eye,
@@ -12,37 +11,59 @@ import {
   RotateCcw,
   Star,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useStudyOptionsStore } from "@/store/studyOptions";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { resetProgressApi } from "@/lib/api";
 
-interface HeaderProps {
-  studyOptions: StudyOptions;
-  toggleDifficulty: () => void;
-  toggleRandomize: () => void;
-  toggleCategoryWise: () => void;
-  toggleAllFolded: () => void;
-  toggleStarred: () => void;
-  resetProgress: () => void;
-}
+export function Header() {
+  const queryClient = useQueryClient();
+  const {
+    showDifficulty,
+    randomize,
+    categoryWise,
+    allFolded,
+    starred,
+    toggleShowDifficulty,
+    toggleRandomize,
+    toggleCategoryWise,
+    toggleAllFolded,
+    toggleStarred,
+  } = useStudyOptionsStore();
 
-export function Header({
-  studyOptions,
-  toggleDifficulty,
-  toggleRandomize,
-  toggleCategoryWise,
-  toggleAllFolded,
-  toggleStarred,
-  resetProgress,
-}: HeaderProps) {
+  const handleResetProgress = async () => {
+    try {
+      await resetProgressApi();
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+      toast.success("Progress reset successfully!");
+    } catch (error) {
+      toast.error("Failed to reset progress");
+      console.error("Reset progress error:", error);
+    }
+  };
+
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       <Button
         variant="outline"
         size="sm"
-        onClick={toggleDifficulty}
+        onClick={toggleShowDifficulty}
         className="w-full sm:w-auto"
       >
-        {studyOptions.showDifficulty ? <Eye size={16} /> : <EyeOff size={16} />}
+        {showDifficulty ? <Eye size={16} /> : <EyeOff size={16} />}
         <span className="ml-2">
-          {studyOptions.showDifficulty ? "Hide" : "Show"} Difficulty
+          {showDifficulty ? "Hide" : "Show"} Difficulty
         </span>
       </Button>
 
@@ -54,7 +75,7 @@ export function Header({
       >
         <Shuffle size={16} />
         <span className="ml-2">
-          {studyOptions.randomize ? "Sequential" : "Random"} Order
+          {randomize ? "Sequential" : "Random"} Order
         </span>
       </Button>
 
@@ -65,25 +86,23 @@ export function Header({
         className="w-full sm:w-auto"
       >
         <GalleryVertical size={16} />
-        <span className="ml-2">
-          {studyOptions.categoryWise ? "List" : "Category"} View
-        </span>
+        <span className="ml-2">{categoryWise ? "List" : "Category"} View</span>
       </Button>
 
-      {studyOptions.categoryWise && (
+      {categoryWise && (
         <Button
           variant="outline"
           size="sm"
           onClick={toggleAllFolded}
           className="w-full sm:w-auto"
         >
-          {studyOptions.allFolded ? (
+          {allFolded ? (
             <UnfoldVertical size={16} />
           ) : (
             <FoldVertical size={16} />
           )}
           <span className="ml-2">
-            {studyOptions.allFolded ? "Expand All" : "Collapse All"}
+            {allFolded ? "Expand All" : "Collapse All"}
           </span>
         </Button>
       )}
@@ -94,21 +113,35 @@ export function Header({
         onClick={toggleStarred}
         className="w-full sm:w-auto"
       >
-        <Star size={16} />
+        <Star size={16} className={starred ? "fill-current" : ""} />
         <span className="ml-2">
-          {studyOptions.starred ? "All Questions" : "Starred"}
+          {starred ? "All Questions" : "Starred Only"}
         </span>
       </Button>
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={resetProgress}
-        className="w-full sm:w-auto"
-      >
-        <RotateCcw size={16} />
-        <span className="ml-2">Reset Progress</span>
-      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <RotateCcw size={16} />
+            <span className="ml-2">Reset Progress</span>
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will reset all completion status and stars for all questions.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetProgress}>
+              Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

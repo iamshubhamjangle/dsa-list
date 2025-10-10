@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchQuestionsApi } from "@/lib/api";
 import RenderQuestionsList from "@/components/home/questionsList";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStudyOptionsStore } from "@/store/studyOptions";
+import { useMemo } from "react";
 
 const QuestionSkeleton = () => (
   <div className="py-3">
@@ -23,6 +25,8 @@ const QuestionSkeleton = () => (
 );
 
 const Questions = () => {
+  const { randomize, starred } = useStudyOptionsStore();
+
   const {
     data: questions,
     isLoading,
@@ -32,6 +36,29 @@ const Questions = () => {
     queryFn: () => fetchQuestionsApi(),
     staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
+
+  // Filter and sort questions based on study options
+  const processedQuestions = useMemo(() => {
+    if (!questions) return [];
+
+    let filtered = [...questions];
+
+    // Filter by starred if enabled
+    if (starred) {
+      filtered = filtered.filter((q) => q.starred);
+    }
+
+    // Randomize if enabled
+    if (randomize) {
+      // Fisher-Yates shuffle algorithm
+      for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+      }
+    }
+
+    return filtered;
+  }, [questions, starred, randomize]);
 
   if (isLoading) {
     return (
@@ -51,8 +78,8 @@ const Questions = () => {
 
   return (
     <div>
-      {questions && questions.length > 0 ? (
-        <RenderQuestionsList questions={questions} />
+      {processedQuestions && processedQuestions.length > 0 ? (
+        <RenderQuestionsList questions={processedQuestions} />
       ) : (
         <div className="text-sm text-muted-foreground">No questions found.</div>
       )}

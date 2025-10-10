@@ -62,3 +62,14 @@ export async function toggleQuestionStarredApi(
   const data = await res.json();
   return data.question;
 }
+
+export async function resetProgressApi(): Promise<void> {
+  const res = await fetch("/api/questions/progress", {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to reset progress");
+  }
+}
