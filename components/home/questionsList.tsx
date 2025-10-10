@@ -3,26 +3,21 @@ import { CheckCircle, Circle, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { cn } from "@/lib/utils";
 import { QuestionDTO } from "@/lib/types";
 import useMutationWrapper from "@/hooks/useMutation";
 import { toggleQuestionCompleteApi, toggleQuestionStarredApi } from "@/lib/api";
 import { useStudyOptionsStore } from "@/store/studyOptions";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface RenderQuestionsListProps {
   questions: QuestionDTO[];
 }
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
-  const { showDifficulty, categoryWise, allFolded } = useStudyOptionsStore();
+  const { showDifficulty, categoryWise } = useStudyOptionsStore();
   const [isCompletedMutating, mutateCompleted] = useMutationWrapper<
     { id: string; completed: boolean },
     QuestionDTO
@@ -63,13 +58,6 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
     () => Object.keys(groupedQuestions),
     [groupedQuestions]
   );
-  const categoriesKey = categories.join(",");
-  const [openCategories, setOpenCategories] = useState<string[]>(categories);
-
-  // Update open categories when allFolded changes
-  useEffect(() => {
-    setOpenCategories(allFolded ? [] : categories);
-  }, [allFolded, categories, categoriesKey]);
 
   const handleToggleCompleted = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
@@ -156,38 +144,43 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
     </div>
   );
 
-  // Render category-wise view using accordion
+  // Render category-wise view with cards for each category
   if (categoryWise) {
     return (
-      <Accordion
-        type="multiple"
-        value={openCategories}
-        onValueChange={setOpenCategories}
-        className="w-full"
-      >
+      <div className="space-y-4">
         {categories.map((category) => (
-          <AccordionItem key={category} value={category}>
-            <AccordionTrigger className="text-sm font-semibold">
-              {category}{" "}
-              <span className="text-xs text-muted-foreground ml-2">
-                ({groupedQuestions[category].length})
-              </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-1">
+          <Card key={category} className="gap-0">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-semibold">
+                {category}{" "}
+                <span className="text-muted-foreground font-normal">
+                  ({groupedQuestions[category].length})
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="divide-y">
                 {groupedQuestions[category].map((question) =>
                   renderQuestion(question)
                 )}
               </div>
-            </AccordionContent>
-          </AccordionItem>
+            </CardContent>
+          </Card>
         ))}
-      </Accordion>
+      </div>
     );
   }
 
-  // Render list view
-  return <>{questions.map((question) => renderQuestion(question))}</>;
+  // Render list view in a single card
+  return (
+    <Card>
+      <CardContent>
+        <div className="divide-y">
+          {questions.map((question) => renderQuestion(question))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default RenderQuestionsList;
