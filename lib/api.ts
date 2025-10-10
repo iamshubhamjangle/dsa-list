@@ -130,3 +130,46 @@ export async function createQuestionApi(data: {
   const response = await res.json();
   return response.question;
 }
+
+// Batch Upload Types
+export interface BatchQuestionInput {
+  name: string;
+  url: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  completed?: boolean;
+  starred?: boolean;
+  tags?: string[]; // Tag names
+  rowNumber: number;
+}
+
+export interface BatchUploadResult {
+  success: boolean;
+  totalProcessed: number;
+  successCount: number;
+  errorCount: number;
+  errors: Array<{
+    rowNumber: number;
+    name: string;
+    error: string;
+  }>;
+  message?: string;
+}
+
+export async function batchUploadQuestionsApi(
+  questions: BatchQuestionInput[]
+): Promise<BatchUploadResult> {
+  const res = await fetch("/api/questions/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ questions }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to batch upload questions");
+  }
+
+  return data;
+}
