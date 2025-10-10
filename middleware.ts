@@ -1,5 +1,25 @@
 import { withAuth } from "next-auth/middleware";
 
+// Add public paths here. These paths will be accessible without authentication
+const PUBLIC_PATHS = [
+  // Auth routes
+  "/auth",
+  "/auth/signin",
+  "/auth/signout",
+  // Public pages
+  // "/about",
+  // "/privacy",
+  // "/terms",
+  // Public API routes
+  // "/api/public",
+  // Add more public paths as needed
+];
+
+// Function to check if the current path is public
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+}
+
 export default withAuth(
   function middleware(req) {
     // Add any additional middleware logic here
@@ -7,8 +27,8 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to auth pages without token
-        if (req.nextUrl.pathname.startsWith("/auth")) {
+        // Check if the path is public
+        if (isPublicPath(req.nextUrl.pathname)) {
           return true;
         }
         // Require token for all other pages
@@ -23,10 +43,10 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/auth (authentication routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next (Next.js internals)
      * - favicon.ico (favicon file)
+     * - public assets
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next|api/auth|favicon\\.ico|assets\\/).*)",
   ],
 };
