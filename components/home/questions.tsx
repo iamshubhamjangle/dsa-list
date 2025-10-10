@@ -1,241 +1,125 @@
 "use client";
 
-import { Question as QuestionType, Tag } from "@/lib/types";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { useQuery } from "@tanstack/react-query";
+import { fetchQuestionsApi } from "@/lib/api";
+import RenderQuestionsList from "@/components/home/questionsList";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useStudyOptionsStore } from "@/store/studyOptions";
+import { useMemo } from "react";
 import {
-  CheckCircle,
-  Circle,
-  Star,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { FileQuestion } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface QuestionsProps {
-  questions: QuestionType[];
-  tags: Tag[];
-  progress: Record<string, { completed: boolean; starred: boolean }>;
-  studyOptions: {
-    showDifficulty: boolean;
-    randomize: boolean;
-    categoryWise: boolean;
-    allFolded: boolean;
-    starred: boolean;
-  };
-  expandedTags: Set<string>;
-  toggleTagExpansion: (tagId: string) => void;
-  toggleQuestionCompleted: (questionId: string) => void;
-  toggleQuestionStarred: (questionId: string) => void;
-  randomOrder: string[] | null;
-}
+const QuestionSkeleton = () => (
+  <div className="py-3">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-3 flex-1">
+        {/* Circle icon skeleton */}
+        <Skeleton className="h-8 w-8 rounded-md" />
+        {/* Star icon skeleton */}
+        <Skeleton className="h-8 w-8 rounded-md" />
+        {/* Question name skeleton */}
+        <Skeleton className="h-5 flex-1 max-w-md" />
+      </div>
+      {/* Badge skeleton */}
+      <Skeleton className="h-6 w-16 rounded-md" />
+    </div>
+  </div>
+);
 
-export function Questions({
-  questions,
-  tags,
-  progress,
-  studyOptions,
-  expandedTags,
-  toggleTagExpansion,
-  toggleQuestionCompleted,
-  toggleQuestionStarred,
-  randomOrder,
-}: QuestionsProps) {
-  const getQuestionProgress = (questionId: string) => {
-    return progress[questionId] || { completed: false, starred: false };
-  };
+const Questions = () => {
+  const { randomize, starred } = useStudyOptionsStore();
 
-  const getQuestionsForTag = (tagId: string) => {
-    let tagQuestions = questions.filter((q) => q.tags.includes(tagId));
+  const {
+    data: questions,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["questions"],
+    queryFn: () => fetchQuestionsApi(),
+    staleTime: 1000 * 60 * 60 * 24, // 1 day
+  });
 
-    if (studyOptions.starred) {
-      tagQuestions = tagQuestions.filter((q) => progress[q.id]?.starred);
+  // Filter and sort questions based on study options
+  const processedQuestions = useMemo(() => {
+    if (!questions) return [];
+
+    let filtered = [...questions];
+
+    // Filter by starred if enabled
+    if (starred) {
+      filtered = filtered.filter((q) => q.starred);
     }
 
-    if (studyOptions.randomize && randomOrder) {
-      tagQuestions.sort(
-        (a, b) => randomOrder.indexOf(a.id) - randomOrder.indexOf(b.id)
-      );
+    // Randomize if enabled
+    if (randomize) {
+      // Fisher-Yates shuffle algorithm
+      for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+      }
     }
 
-    return tagQuestions;
-  };
+    return filtered;
+  }, [questions, starred, randomize]);
 
-  const renderQuestion = (question: QuestionType) => {
-    const questionProgress = progress[question.id] || {
-      completed: false,
-      starred: false,
-    };
-
+  if (isLoading) {
     return (
-      <div key={question.id} className="py-3 first:pt-0 last:pb-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 flex-1">
-            <Button
-              onClick={() => toggleQuestionCompleted(question.id)}
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-green-600"
-            >
-              {questionProgress.completed ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              ) : (
-                <Circle className="h-5 w-5" />
-              )}
-            </Button>
-
-            <Button
-              onClick={() => toggleQuestionStarred(question.id)}
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "h-8 w-8 p-0 transition-colors",
-                questionProgress.starred
-                  ? "text-yellow-500"
-                  : "text-muted-foreground hover:text-yellow-500"
-              )}
-            >
-              <Star
-                className={cn(
-                  "h-4 w-4",
-                  questionProgress.starred && "fill-current"
-                )}
-              />
-            </Button>
-
-            <div className="flex-1">
-              <a
-                href={question.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "text-sm font-medium hover:text-primary transition-colors",
-                  questionProgress.completed &&
-                    "line-through text-muted-foreground"
-                )}
-              >
-                {question.name}
-              </a>
-            </div>
-          </div>
-
-          {studyOptions.showDifficulty && (
-            <Badge
-              variant="outline"
-              className={cn({
-                "border-green-500 text-green-500":
-                  question.difficulty === "Easy",
-                "border-yellow-500 text-yellow-500":
-                  question.difficulty === "Medium",
-                "border-red-500 text-red-500": question.difficulty === "Hard",
-              })}
-            >
-              {question.difficulty}
-            </Badge>
-          )}
-        </div>
+      <div className="space-y-1">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <QuestionSkeleton key={i} />
+        ))}
       </div>
     );
-  };
+  }
 
-  if (!studyOptions.categoryWise) {
+  if (isError) {
     return (
-      <Card className="hover:bg-muted/50 transition-colors py-2">
-        <CardContent className="pt-0">
-          <div className="divide-y">
-            {questions
-              .filter((q) => !studyOptions.starred || progress[q.id]?.starred)
-              .sort((a, b) => {
-                if (studyOptions.randomize && randomOrder) {
-                  return randomOrder.indexOf(a.id) - randomOrder.indexOf(b.id);
-                }
-                return 0;
-              })
-              .map(renderQuestion)}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="text-sm text-destructive">Failed to load questions.</div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {tags.map((tag) => {
-        const tagQuestions = getQuestionsForTag(tag.id);
-        if (tagQuestions.length === 0) return null;
-
-        return (
-          <Card
-            key={tag.id}
-            className="hover:bg-muted/50 transition-colors py-2"
-          >
-            <CardHeader
-              className="cursor-pointer"
-              onClick={() => {
-                // don't fold if in all questions mode
-                if (!studyOptions.categoryWise) return;
-                toggleTagExpansion(tag.id);
-              }}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-3">
-                  <div className={cn("w-4 h-4 rounded-full", tag.color)} />
-                  <CardTitle className="text-lg">
-                    {tag.name} (
-                    {
-                      tagQuestions.filter(
-                        (q) => getQuestionProgress(q.id).completed
-                      ).length
-                    }
-                    /{tagQuestions.length})
-                  </CardTitle>
-                </div>
-                <div className="flex flex-1 items-center space-x-2 ml-10">
-                  <Progress
-                    value={
-                      tagQuestions.length === 0
-                        ? 0
-                        : (tagQuestions.filter(
-                            (q) => getQuestionProgress(q.id).completed
-                          ).length /
-                            tagQuestions.length) *
-                          100
-                    }
-                  />
-                  {expandedTags.has(tag.id) ? (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground mt-1" />
-                  ) : (
-                    <ChevronRight className="h-5 w-5 text-muted-foreground mt-1" />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-
-            {expandedTags.has(tag.id) && (
-              <CardContent className="pt-0">
-                <div className="divide-y">
-                  {tagQuestions.map(renderQuestion)}
-                </div>
-              </CardContent>
+    <div>
+      {processedQuestions && processedQuestions.length > 0 ? (
+        <RenderQuestionsList questions={processedQuestions} />
+      ) : (
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileQuestion />
+            </EmptyMedia>
+            <EmptyTitle>No Questions Found</EmptyTitle>
+            <EmptyDescription>
+              {starred
+                ? "No starred questions available. Star some questions to see them here."
+                : "No questions are available at the moment. Add questions from the manage page to get started."}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            {starred && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  useStudyOptionsStore.setState({ starred: false })
+                }
+              >
+                Clear Filter
+              </Button>
             )}
-          </Card>
-        );
-      })}
-
-      {questions.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <p className="text-muted-foreground text-lg">
-              No questions added yet.
-            </p>
-            <p className="text-muted-foreground text-sm mt-2">
-              Go to the Manage page to add questions and tags.
-            </p>
-          </CardContent>
-        </Card>
+          </EmptyContent>
+        </Empty>
       )}
     </div>
   );
-}
+};
+
+export default Questions;

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Navigation } from "@/components/navigation";
+import { Navigation } from "@/components/navbar/navigation";
 import { ThemeProvider } from "@/components/provider/theme-provider";
 import { SessionProviderWrapper } from "@/components/provider/session-provider";
-import { Toaster } from "react-hot-toast";
+import ToastProvider from "@/components/provider/toast-provider";
+import { QueryProviderWrapper } from "@/components/provider/query-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,27 +35,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground`}
       >
         <SessionProviderWrapper>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navigation />
-            <main className="min-h-screen">{children}</main>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'hsl(var(--background))',
-                  color: 'hsl(var(--foreground))',
-                  border: '1px solid hsl(var(--border))',
-                },
-              }}
-            />
-          </ThemeProvider>
+          <QueryProviderWrapper>
+            <ThemeProvider>
+              <Navigation />
+              <main className="min-h-screen">{children}</main>
+              <ToastProvider />
+            </ThemeProvider>
+          </QueryProviderWrapper>
         </SessionProviderWrapper>
+        <SpeedInsights />
       </body>
     </html>
   );

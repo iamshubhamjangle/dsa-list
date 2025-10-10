@@ -1,17 +1,58 @@
+// DTOs for API responses (safe for client/server, no Prisma types)
+export interface TagDTO {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface QuestionDTO {
+  id: string;
+  name: string;
+  url: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  completed: boolean;
+  starred: boolean;
+  notes?: string;
+  timeSpent?: number;
+  solvedAt?: string | null; // ISO string for date
+  createdAt: string; // ISO string for date
+  updatedAt: string; // ISO string for date
+  tags: TagDTO[];
+}
 export interface Question {
   id: string;
   name: string;
   url: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  tags: string[];
   completed: boolean;
   starred: boolean;
+  notes?: string;
+  timeSpent?: number;
+  solvedAt?: Date;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  tags?: Tag[];
+  questionTags?: QuestionTag[];
 }
 
 export interface Tag {
   id: string;
   name: string;
   color: string;
+  description?: string;
+  userId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface QuestionTag {
+  id: string;
+  questionId: string;
+  tagId: string;
+  question?: Question;
+  tag?: Tag;
 }
 
 export interface UploadedData {
@@ -19,6 +60,9 @@ export interface UploadedData {
   url: string;
   difficulty: string;
   tags: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface StudyOptions {
