@@ -1,12 +1,12 @@
 Todo:
 
-- Work on GET questions for home page
 - Work on GET tags, GET questions for manage page
 - Work on CRUD tags for manage page
 - Work on CRUD questions for manage page
 - Fix the ordering of tags using additional order column in DB
 - Upload - BatchCreateQuestions
 - tag color should be enum with fixed colors on FE/BE
+- req.body must be validated with zod schema
 
 # DSA List - Coding Problem Management Tool
 

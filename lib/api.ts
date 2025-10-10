@@ -73,3 +73,24 @@ export async function resetProgressApi(): Promise<void> {
     throw new Error("Failed to reset progress");
   }
 }
+
+export async function createTagApi(data: {
+  name: string;
+  color: string;
+  description?: string;
+}) {
+  const res = await fetch("/api/tags", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || "Failed to create tag");
+  }
+
+  const response = await res.json();
+  return response.tag;
+}

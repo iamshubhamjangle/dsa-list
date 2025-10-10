@@ -1,69 +1,27 @@
-"use client";
+import HeaderAddQuestion from "./headerAddQuestion";
+import HeaderAddTag from "./headerAddTag";
+import HeaderUploadExcel from "./headerUploadExcel";
+import HeaderExportExcel from "./headerExportExcel";
 
-import { Button } from "@/components/ui/button";
-import { Plus, Upload, Download } from "lucide-react";
-
-interface HeaderProps {
-  onAddQuestion: () => void;
-  onAddTag: () => void;
-  onExport: () => void;
-  onUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-export function Header({
-  onAddQuestion,
-  onAddTag,
-  onExport,
-  onUpload,
-}: HeaderProps) {
+const Header: React.FC = () => {
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onAddQuestion}
-        className="w-full sm:w-auto"
-      >
-        <Plus size={16} />
-        <span className="ml-2">Add Question</span>
-      </Button>
+    <div className="flex items-center justify-between">
+      <h1 className="text-3xl font-bold">Manage Problems</h1>
+      <div className="flex space-x-3">
+        {/* Add Question Dialog */}
+        <HeaderAddQuestion />
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onAddTag}
-        className="w-full sm:w-auto"
-      >
-        <Plus size={16} />
-        <span className="ml-2">Add Tag</span>
-      </Button>
+        {/* Add Tag Dialog */}
+        <HeaderAddTag />
 
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onExport}
-        className="w-full sm:w-auto"
-      >
-        <Download size={16} />
-        <span className="ml-2">Export</span>
-      </Button>
+        {/* Upload Excel File */}
+        <HeaderUploadExcel />
 
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full sm:w-auto"
-        onClick={() => document.getElementById("file-upload")?.click()}
-      >
-        <Upload size={16} />
-        <span className="ml-2">Import</span>
-      </Button>
-      <input
-        id="file-upload"
-        type="file"
-        accept=".xlsx"
-        className="hidden"
-        onChange={onUpload}
-      />
+        {/* Export Excel File */}
+        <HeaderExportExcel />
+      </div>
     </div>
   );
-}
+};
+
+export default Header;

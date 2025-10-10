@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { cn } from "@/lib/utils";
 import { QuestionDTO } from "@/lib/types";
-import useMutationWrapper from "@/hooks/useMutation";
 import { toggleQuestionCompleteApi, toggleQuestionStarredApi } from "@/lib/api";
 import { useStudyOptionsStore } from "@/store/studyOptions";
 import { useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface RenderQuestionsListProps {
   questions: QuestionDTO[];
@@ -18,18 +19,42 @@ interface RenderQuestionsListProps {
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
   const { showDifficulty, categoryWise } = useStudyOptionsStore();
-  const [isCompletedMutating, mutateCompleted] = useMutationWrapper<
-    { id: string; completed: boolean },
-    QuestionDTO
-  >(
-    ({ id, completed }) => toggleQuestionCompleteApi(id, completed),
-    ["questions"]
-  );
+  const queryClient = useQueryClient();
 
-  const [isStarredMutating, mutateStarred] = useMutationWrapper<
-    { id: string; starred: boolean },
-    QuestionDTO
-  >(({ id, starred }) => toggleQuestionStarredApi(id, starred), ["questions"]);
+  const completedMutation = useMutation({
+    mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
+      toggleQuestionCompleteApi(id, completed),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update question status");
+    },
+  });
+
+  const starredMutation = useMutation({
+    mutationFn: ({ id, starred }: { id: string; starred: boolean }) =>
+      toggleQuestionStarredApi(id, starred),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update starred status");
+    },
+  });
+
+  // Helper functions to check if a specific item is being mutated
+  const isCompletedMutating = (itemId: string): boolean => {
+    return (
+      completedMutation.isPending && completedMutation.variables?.id === itemId
+    );
+  };
+
+  const isStarredMutating = (itemId: string): boolean => {
+    return (
+      starredMutation.isPending && starredMutation.variables?.id === itemId
+    );
+  };
 
   // Group questions by tags for category view
   const groupedQuestions = useMemo(() => {
@@ -61,12 +86,12 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
 
   const handleToggleCompleted = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
-    mutateCompleted({ id: questionId, completed: !currentValue });
+    completedMutation.mutate({ id: questionId, completed: !currentValue });
   };
 
   const handleToggleStarred = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;
-    mutateStarred({ id: questionId, starred: !currentValue });
+    starredMutation.mutate({ id: questionId, starred: !currentValue });
   };
 
   const renderQuestion = (question: QuestionDTO) => (
