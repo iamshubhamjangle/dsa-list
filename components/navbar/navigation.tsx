@@ -2,15 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BookOpen,
-  Github,
-  Settings,
-  LogOut,
-  Moon,
-  Sun,
-  ChevronsUpDown,
-} from "lucide-react";
+import { BookOpen, Github, Settings, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";

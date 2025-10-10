@@ -1,7 +1,14 @@
+"use client";
+
+import React, { Suspense, lazy } from "react";
 import HeaderAddQuestion from "./headerAddQuestion";
 import HeaderAddTag from "./headerAddTag";
 import HeaderUploadExcel from "./headerUploadExcel";
-import HeaderExportExcel from "./headerExportExcel";
+import { Button } from "../ui/button";
+import { Download } from "lucide-react";
+
+// Lazy load the HeaderExportExcel component
+const HeaderExportExcel = lazy(() => import("./headerExportExcel"));
 
 const Header: React.FC = () => {
   return (
@@ -17,8 +24,21 @@ const Header: React.FC = () => {
         {/* Upload Excel File */}
         <HeaderUploadExcel />
 
-        {/* Export Excel File */}
-        <HeaderExportExcel />
+        {/* Export Excel File - Lazy loaded */}
+        <Suspense
+          fallback={
+            <Button
+              variant="outline"
+              className="flex items-center space-x-2"
+              disabled
+            >
+              <Download className="h-4 w-4" />
+              <span>Export</span>
+            </Button>
+          }
+        >
+          <HeaderExportExcel />
+        </Suspense>
       </div>
     </div>
   );
