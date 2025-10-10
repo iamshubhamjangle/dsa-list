@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
  * @param invalidateQueryKeys - Query keys to invalidate on success
  * @returns [isMutating, mutate] - Function to check if item is mutating and mutate function
  */
-function useItemMutation<TVariables extends { id: string }, TData = unknown>(
+function useMutationWrapper<TVariables extends { id: string }, TData = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
   invalidateQueryKeys: string[] = []
 ) {
@@ -31,4 +31,4 @@ function useItemMutation<TVariables extends { id: string }, TData = unknown>(
   return [isMutating, mutation.mutate] as const;
 }
 
-export default useItemMutation;
+export default useMutationWrapper;

@@ -6,26 +6,26 @@ import { Spinner } from "@/components/ui/spinner";
 
 import { cn } from "@/lib/utils";
 import { QuestionDTO } from "@/lib/types";
-import useItemMutation from "@/hooks/useMutation";
-import { toggleQuestionComplete, toggleQuestionStarred } from "@/lib/api";
+import useMutationWrapper from "@/hooks/useMutation";
+import { toggleQuestionCompleteApi, toggleQuestionStarredApi } from "@/lib/api";
 
 interface RenderQuestionsListProps {
   questions: QuestionDTO[];
 }
 
 function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
-  const [isCompletedMutating, mutateCompleted] = useItemMutation<
+  const [isCompletedMutating, mutateCompleted] = useMutationWrapper<
     { id: string; completed: boolean },
     QuestionDTO
   >(
-    ({ id, completed }) => toggleQuestionComplete(id, completed),
+    ({ id, completed }) => toggleQuestionCompleteApi(id, completed),
     ["questions"]
   );
 
-  const [isStarredMutating, mutateStarred] = useItemMutation<
+  const [isStarredMutating, mutateStarred] = useMutationWrapper<
     { id: string; starred: boolean },
     QuestionDTO
-  >(({ id, starred }) => toggleQuestionStarred(id, starred), ["questions"]);
+  >(({ id, starred }) => toggleQuestionStarredApi(id, starred), ["questions"]);
 
   const handleToggleCompleted = (questionId: string, currentValue: boolean) => {
     if (!questionId) return;

@@ -1,6 +1,6 @@
 import { QuestionDTO } from "./types";
 
-export async function fetchQuestions(params?: {
+export async function fetchQuestionsApi(params?: {
   difficulty?: "Easy" | "Medium" | "Hard";
   completed?: boolean;
   starred?: boolean;
@@ -25,7 +25,7 @@ export async function fetchQuestions(params?: {
   return data.questions as QuestionDTO[];
 }
 
-export async function toggleQuestionComplete(
+export async function toggleQuestionCompleteApi(
   id: string,
   completed: boolean
 ): Promise<QuestionDTO> {
@@ -44,7 +44,7 @@ export async function toggleQuestionComplete(
   return data.question;
 }
 
-export async function toggleQuestionStarred(
+export async function toggleQuestionStarredApi(
   id: string,
   starred: boolean
 ): Promise<QuestionDTO> {

@@ -147,7 +147,7 @@ export default function App() {
     saveStudyOptions(newOptions);
   };
 
-  const toggleQuestionCompleted = (questionId: string) => {
+  const toggleQuestionCompleteApid = (questionId: string) => {
     const currentProgress = progress[questionId] || {
       completed: false,
       starred: false,
@@ -162,7 +162,7 @@ export default function App() {
     saveProgress(updatedProgress);
   };
 
-  const toggleQuestionStarred = (questionId: string) => {
+  const toggleQuestionStarredApi = (questionId: string) => {
     const currentProgress = progress[questionId] || {
       completed: false,
       starred: false,
@@ -224,8 +224,8 @@ export default function App() {
         studyOptions={studyOptions}
         expandedTags={expandedTags}
         toggleTagExpansion={toggleTagExpansion}
-        toggleQuestionCompleted={toggleQuestionCompleted}
-        toggleQuestionStarred={toggleQuestionStarred}
+        toggleQuestionCompleteApid={toggleQuestionCompleteApid}
+        toggleQuestionStarredApi={toggleQuestionStarredApi}
         randomOrder={randomOrder}
       />
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchQuestions } from "@/lib/api";
+import { fetchQuestionsApi } from "@/lib/api";
 import RenderQuestionsList from "@/components/home/questionsList";
 
 const Questions = () => {
@@ -11,7 +11,7 @@ const Questions = () => {
     isError,
   } = useQuery({
     queryKey: ["questions"],
-    queryFn: () => fetchQuestions(),
+    queryFn: () => fetchQuestionsApi(),
     staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
 
