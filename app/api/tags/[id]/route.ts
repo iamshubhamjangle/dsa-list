@@ -8,7 +8,7 @@ import { TAG_COLORS, DEFAULT_TAG_COLOR } from "@/lib/constants";
 // GET /api/tags/[id] - Get a specific tag
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -49,7 +49,7 @@ export async function GET(
 // PUT /api/tags/[id] - Update a specific tag
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -131,7 +131,7 @@ export async function PUT(
 // DELETE /api/tags/[id] - Delete a specific tag
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

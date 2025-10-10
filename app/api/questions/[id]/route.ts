@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 // GET /api/questions/[id] - Get a specific question
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -57,7 +57,7 @@ export async function GET(
 // PUT /api/questions/[id] - Update a specific question
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -217,7 +217,7 @@ export async function PUT(
 // DELETE /api/questions/[id] - Delete a specific question
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);

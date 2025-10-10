@@ -1,5 +1,3 @@
-"use client";
-
 import { Progress } from "@/components/home/progress";
 import Questions from "@/components/home/questions";
 import { Header } from "@/components/home/header";
