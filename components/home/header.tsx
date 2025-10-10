@@ -59,34 +59,30 @@ export function Header() {
         variant="outline"
         size="sm"
         onClick={toggleShowDifficulty}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto flex items-center gap-2"
       >
         {showDifficulty ? <Eye size={16} /> : <EyeOff size={16} />}
-        <span className="ml-2">
-          {showDifficulty ? "Hide" : "Show"} Difficulty
-        </span>
+        <span>{showDifficulty ? "Hide" : "Show"} Difficulty</span>
       </Button>
 
       <Button
         variant="outline"
         size="sm"
         onClick={toggleRandomize}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto flex items-center gap-2"
       >
         <Shuffle size={16} />
-        <span className="ml-2">
-          {randomize ? "Sequential" : "Random"} Order
-        </span>
+        <span>{randomize ? "Sequential" : "Random"} Order</span>
       </Button>
 
       <Button
         variant="outline"
         size="sm"
         onClick={toggleCategoryWise}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto flex items-center gap-2"
       >
         <GalleryVertical size={16} />
-        <span className="ml-2">{categoryWise ? "List" : "Category"} View</span>
+        <span>{categoryWise ? "List" : "Category"} View</span>
       </Button>
 
       {categoryWise && (
@@ -94,16 +90,14 @@ export function Header() {
           variant="outline"
           size="sm"
           onClick={toggleAllFolded}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto flex items-center gap-2"
         >
           {allFolded ? (
             <UnfoldVertical size={16} />
           ) : (
             <FoldVertical size={16} />
           )}
-          <span className="ml-2">
-            {allFolded ? "Expand All" : "Collapse All"}
-          </span>
+          <span>{allFolded ? "Expand All" : "Collapse All"}</span>
         </Button>
       )}
 
@@ -111,19 +105,21 @@ export function Header() {
         variant="outline"
         size="sm"
         onClick={toggleStarred}
-        className="w-full sm:w-auto"
+        className="w-full sm:w-auto flex items-center gap-2"
       >
         <Star size={16} className={starred ? "fill-current" : ""} />
-        <span className="ml-2">
-          {starred ? "All Questions" : "Starred Only"}
-        </span>
+        <span>{starred ? "All Questions" : "Starred Only"}</span>
       </Button>
 
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto flex items-center gap-2"
+          >
             <RotateCcw size={16} />
-            <span className="ml-2">Reset Progress</span>
+            <span>Reset Progress</span>
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
