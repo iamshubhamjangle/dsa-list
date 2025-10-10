@@ -65,9 +65,9 @@ export function Navigation() {
               height={30}
               alt="Logo images"
             ></Image>
-            <h1 className="text-md font-extrabold">DSA List</h1>
+            <h1 className="text-md font-extrabold">DSA LIST</h1>
           </div>
-          <div className="flex space-x-1 items-center">
+          <div className="flex space-x-3 items-center">
             {session &&
               navItems.map((item) => {
                 const Icon = item.icon;
@@ -106,17 +106,29 @@ export function Navigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {session.user?.name || "User"}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user?.email}
-                      </p>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarImage
+                          src={session.user?.image || undefined}
+                          alt={session.user?.name || "User"}
+                        />
+                        <AvatarFallback>
+                          {getInitials(session.user?.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {session.user?.name || "User"}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {session.user?.email}
+                        </p>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
+                    className="cursor-pointer hover:bg-muted"
                     onClick={() =>
                       setTheme(theme === "dark" ? "light" : "dark")
                     }
@@ -133,7 +145,10 @@ export function Navigation() {
                       </>
                     )}
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
+                  <DropdownMenuItem
+                    asChild
+                    className="cursor-pointer hover:bg-muted"
+                  >
                     <a
                       href="https://github.com/iamshubhamjangle/dsa-list"
                       target="_blank"
@@ -145,6 +160,7 @@ export function Navigation() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
+                    className="cursor-pointer hover:bg-muted"
                     onClick={() => {
                       toast.success("Signed out successfully!");
                       signOut();
