@@ -6,6 +6,16 @@ import RenderQuestionsList from "@/components/home/questionsList";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStudyOptionsStore } from "@/store/studyOptions";
 import { useMemo } from "react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { FileQuestion } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const QuestionSkeleton = () => (
   <div className="py-3">
@@ -81,7 +91,32 @@ const Questions = () => {
       {processedQuestions && processedQuestions.length > 0 ? (
         <RenderQuestionsList questions={processedQuestions} />
       ) : (
-        <div className="text-sm text-muted-foreground">No questions found.</div>
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileQuestion />
+            </EmptyMedia>
+            <EmptyTitle>No Questions Found</EmptyTitle>
+            <EmptyDescription>
+              {starred
+                ? "No starred questions available. Star some questions to see them here."
+                : "No questions are available at the moment. Add questions from the manage page to get started."}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            {starred && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  useStudyOptionsStore.setState({ starred: false })
+                }
+              >
+                Clear Filter
+              </Button>
+            )}
+          </EmptyContent>
+        </Empty>
       )}
     </div>
   );
