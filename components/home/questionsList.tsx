@@ -17,7 +17,7 @@ import { toggleQuestionCompleteApi, toggleQuestionStarredApi } from "@/lib/api";
 import { useStudyOptionsStore } from "@/store/studyOptions";
 import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface RenderQuestionsListProps {
   questions: QuestionDTO[];

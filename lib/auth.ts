@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
   callbacks: {
     // Add additional properties to jwt here.
     // Properties added should be added in @/app/_types/next-auth.d.ts for type safety

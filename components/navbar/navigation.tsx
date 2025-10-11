@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useTheme } from "next-themes";
 
 export function Navigation() {

@@ -4,7 +4,7 @@ import "./globals.css";
 import { Navigation } from "@/components/navbar/navigation";
 import { ThemeProvider } from "@/components/provider/theme-provider";
 import { SessionProviderWrapper } from "@/components/provider/session-provider";
-import ToastProvider from "@/components/provider/toast-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { QueryProviderWrapper } from "@/components/provider/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -39,7 +39,7 @@ export default function RootLayout({
             <ThemeProvider>
               <Navigation />
               <main className="min-h-screen">{children}</main>
-              <ToastProvider />
+              <Toaster position="top-right" duration={4000} />
             </ThemeProvider>
           </QueryProviderWrapper>
         </SessionProviderWrapper>

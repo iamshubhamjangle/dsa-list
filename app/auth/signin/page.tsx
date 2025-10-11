@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useState } from "react";
 
 export default function SignIn() {
