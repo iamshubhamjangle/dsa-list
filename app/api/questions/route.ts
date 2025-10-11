@@ -10,6 +10,7 @@ import { QuestionDTO } from "@/lib/types";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    console.log(session);
 
     if (!session?.user?.id) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
