@@ -14,7 +14,7 @@ interface StudyOptionsStore extends StudyOptions {
 const initialState: StudyOptions = {
   showDifficulty: true,
   randomize: false,
-  categoryWise: false,
+  categoryWise: true,
   allFolded: false,
   starred: false,
 };

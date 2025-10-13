@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/empty";
 import { FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import TemplateImport from "@/components/home/templateImport";
 
 const QuestionSkeleton = () => (
   <div className="py-3">
@@ -86,6 +87,11 @@ const Questions = () => {
     );
   }
 
+  // Check if user has no questions at all (not just filtered)
+  const hasNoQuestions = !questions || questions.length === 0;
+  const hasNoFilteredQuestions =
+    processedQuestions && processedQuestions.length === 0;
+
   return (
     <div>
       {processedQuestions && processedQuestions.length > 0 ? (
@@ -96,15 +102,23 @@ const Questions = () => {
             <EmptyMedia variant="icon">
               <FileQuestion />
             </EmptyMedia>
-            <EmptyTitle>No Questions Found</EmptyTitle>
+            <EmptyTitle>
+              {hasNoQuestions
+                ? "Get Started with Questions"
+                : "No Questions Found"}
+            </EmptyTitle>
             <EmptyDescription>
-              {starred
+              {hasNoQuestions
+                ? "Import an existing template to quickly populate your question bank with curated DSA problems."
+                : starred
                 ? "No starred questions available. Star some questions to see them here."
-                : "No questions are available at the moment. Add questions from the manage page to get started."}
+                : "No questions match your current filters."}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            {starred && (
+            {hasNoQuestions ? (
+              <TemplateImport />
+            ) : starred ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -114,7 +128,7 @@ const Questions = () => {
               >
                 Clear Filter
               </Button>
-            )}
+            ) : null}
           </EmptyContent>
         </Empty>
       )}

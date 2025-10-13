@@ -16,91 +16,13 @@ export const DEFAULT_TAG_COLOR = "#10B981"; // green-500
 export type TagColor = (typeof TAG_COLORS)[number];
 
 // Default tags for new users
+// Color mapping based on difficulty: green shades (easy), amber/pink (medium), red (hard)
 export const DEFAULT_TAGS = [
+  // Green-200 level (Easiest)
   {
-    name: "Array",
-    color: "#3B82F6", // blue
+    name: "Arrays",
+    color: "#10B981", // green
     description: "Array manipulation and traversal problems",
-  },
-  {
-    name: "String",
-    color: "#10B981", // green
-    description: "String processing and manipulation",
-  },
-  {
-    name: "Intervals",
-    color: "#3B82F6", // blue
-    description: "Interval problems",
-  },
-  {
-    name: "Hash Table",
-    color: "#8B5CF6", // purple
-    description: "Hash map and hash set problems",
-  },
-  {
-    name: "Dynamic Programming",
-    color: "#6366F1", // indigo
-    description: "DP optimization problems",
-  },
-  {
-    name: "Math",
-    color: "#F59E0B", // amber
-    description: "Mathematical and numerical problems",
-  },
-  {
-    name: "Sorting",
-    color: "#EC4899", // pink
-    description: "Sorting algorithms and problems",
-  },
-  {
-    name: "Binary Search",
-    color: "#EF4444", // red
-    description: "Binary search and its variants",
-  },
-  {
-    name: "Tree",
-    color: "#10B981", // green
-    description: "Binary trees and tree traversals",
-  },
-  {
-    name: "Depth-First Search",
-    color: "#3B82F6", // blue
-    description: "DFS algorithms and problems",
-  },
-  {
-    name: "Breadth-First Search",
-    color: "#6366F1", // indigo
-    description: "BFS algorithms and problems",
-  },
-  {
-    name: "Graph",
-    color: "#8B5CF6", // purple
-    description: "Graph algorithms and problems",
-  },
-  {
-    name: "Greedy",
-    color: "#F59E0B", // amber
-    description: "Greedy algorithm problems",
-  },
-  {
-    name: "Backtracking",
-    color: "#EF4444", // red
-    description: "Backtracking and recursion",
-  },
-  {
-    name: "Stack",
-    color: "#EC4899", // pink
-    description: "Stack data structure problems",
-  },
-  {
-    name: "Queue",
-    color: "#6B7280", // gray
-    description: "Queue data structure problems",
-  },
-  {
-    name: "Linked List",
-    color: "#3B82F6", // blue
-    description: "Linked list manipulation",
   },
   {
     name: "Heap",
@@ -109,27 +31,97 @@ export const DEFAULT_TAGS = [
   },
   {
     name: "Two Pointers",
-    color: "#8B5CF6", // purple
+    color: "#10B981", // green
     description: "Two pointer technique",
   },
   {
     name: "Sliding Window",
-    color: "#6366F1", // indigo
+    color: "#10B981", // green
     description: "Sliding window technique",
+  },
+  // Green-300 level (Easy-Medium)
+  {
+    name: "Stack",
+    color: "#3B82F6", // blue
+    description: "Stack data structure problems",
+  },
+  {
+    name: "Binary Search",
+    color: "#3B82F6", // blue
+    description: "Binary search and its variants",
+  },
+  {
+    name: "Linked List",
+    color: "#3B82F6", // blue
+    description: "Linked list manipulation",
+  },
+  {
+    name: "Trees",
+    color: "#3B82F6", // blue
+    description: "Binary trees and tree traversals",
+  },
+  // Green-500 level (Medium)
+  {
+    name: "Graph Basics",
+    color: "#6366F1", // indigo
+    description: "Basic graph algorithms and traversals",
+  },
+  // Red-300 level (Medium-Hard)
+  {
+    name: "Backtracking",
+    color: "#8B5CF6", // purple
+    description: "Backtracking and recursion",
+  },
+  {
+    name: "Tries",
+    color: "#8B5CF6", // purple
+    description: "Trie data structure and problems",
+  },
+  {
+    name: "Graphs",
+    color: "#8B5CF6", // purple
+    description: "Graph algorithms and problems",
+  },
+  {
+    name: "Advanced Graphs",
+    color: "#8B5CF6", // purple
+    description: "Advanced graph algorithms (MST, shortest paths, etc.)",
+  },
+  // Red-400 level (Hard)
+  {
+    name: "DP 1D",
+    color: "#EC4899", // pink
+    description: "1D Dynamic Programming problems",
+  },
+  {
+    name: "DP 2D",
+    color: "#EC4899", // pink
+    description: "2D Dynamic Programming problems",
+  },
+  {
+    name: "Greedy",
+    color: "#EC4899", // pink
+    description: "Greedy algorithm problems",
+  },
+  {
+    name: "Intervals",
+    color: "#EC4899", // pink
+    description: "Interval problems",
+  },
+  // Red-500 level (Hardest)
+  {
+    name: "Segment Tree",
+    color: "#EF4444", // red
+    description: "Segment tree data structure and problems",
+  },
+  {
+    name: "Math",
+    color: "#EF4444", // red
+    description: "Mathematical and numerical problems",
   },
   {
     name: "Bit Manipulation",
     color: "#EF4444", // red
     description: "Bitwise operations and tricks",
-  },
-  {
-    name: "Trie",
-    color: "#10B981", // green
-    description: "Trie data structure and problems",
-  },
-  {
-    name: "Segment Tree",
-    color: "#10B981", // pink
-    description: "Segment tree data structure and problems",
   },
 ] as const;

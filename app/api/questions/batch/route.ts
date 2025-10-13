@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/db";
 import { authOptions } from "@/lib/auth";
 
-const MAX_BATCH_SIZE = 100;
+const MAX_BATCH_SIZE = 150; // Increased from 100 for faster imports
 const MAX_QUESTIONS_PER_USER = 500;
 
 interface BatchQuestionInput {
