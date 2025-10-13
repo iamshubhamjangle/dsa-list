@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./db";
 import { Adapter } from "next-auth/adapters";
+import { createDefaultTagsForUser } from "./tags";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -31,10 +32,21 @@ export const authOptions: NextAuthOptions = {
       if (token.sub) {
         token.id = token.sub;
       }
-      // if (account?.provider === "google" && user) {
+
       // If user logs in through google oAuth, It doesn't go through registration process.
-      // This is the place to create db entry for the user trying login first time.
-      // }
+      // This is the place to create default tags for the user logging in for the first time.
+      // The `user` object is only present on the initial sign-in
+      if (account?.provider === "google" && user?.id) {
+        // Create default tags for new user asynchronously
+        // We don't await to avoid blocking the sign-in process
+        createDefaultTagsForUser(user.id).catch((error) => {
+          console.error(
+            `Failed to create default tags for user ${user.id}:`,
+            error
+          );
+        });
+      }
+
       return token;
     },
     async session({ session, token }) {

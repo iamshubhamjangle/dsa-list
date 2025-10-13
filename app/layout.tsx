@@ -7,6 +7,7 @@ import { SessionProviderWrapper } from "@/components/provider/session-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProviderWrapper } from "@/components/provider/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +45,7 @@ export default function RootLayout({
           </QueryProviderWrapper>
         </SessionProviderWrapper>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

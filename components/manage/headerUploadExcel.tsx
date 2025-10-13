@@ -21,7 +21,7 @@ import {
   createTagApi,
 } from "@/lib/api";
 
-const MAX_QUESTIONS_PER_BATCH = 100;
+const MAX_QUESTIONS_PER_BATCH = 150; // Increased from 100 for faster imports
 const MAX_TOTAL_QUESTIONS = 500;
 
 interface UploadLog {
