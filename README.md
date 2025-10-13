@@ -72,6 +72,15 @@ npx prisma studio
 npx prisma db pull
 ```
 
+#### 5. Test API in postman
+
+```bash
+# Copy the session-token on session-storage of chrome, pass it as header in every request
+curl -i -X GET \
+   -H "next-auth.session-token:eyJhbGciOiJkaXI....." \
+ 'http://localhost:3000/api/questions'
+```
+
 ## Tech Stack
 
 - **Next.js 15**
