@@ -11,10 +11,8 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TemplateImport from "@/components/home/templateImport";
 
@@ -89,8 +87,8 @@ const Questions = () => {
 
   // Check if user has no questions at all (not just filtered)
   const hasNoQuestions = !questions || questions.length === 0;
-  const hasNoFilteredQuestions =
-    processedQuestions && processedQuestions.length === 0;
+  // const hasNoFilteredQuestions =
+  //   processedQuestions && processedQuestions.length === 0;
 
   return (
     <div>
@@ -99,17 +97,17 @@ const Questions = () => {
       ) : (
         <Empty className="border border-dashed">
           <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <FileQuestion />
-            </EmptyMedia>
+            {/* <EmptyMedia variant="icon">
+              <LayoutTemplate />
+            </EmptyMedia> */}
             <EmptyTitle>
               {hasNoQuestions
-                ? "Get Started with Questions"
+                ? "Get Started with Curated Templates"
                 : "No Questions Found"}
             </EmptyTitle>
             <EmptyDescription>
               {hasNoQuestions
-                ? "Import an existing template to quickly populate your question bank with curated DSA problems."
+                ? "Select a template and import!"
                 : starred
                 ? "No starred questions available. Star some questions to see them here."
                 : "No questions match your current filters."}

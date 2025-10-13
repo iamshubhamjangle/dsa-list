@@ -69,6 +69,21 @@ export async function POST(
       );
     }
 
+    // Verify user exists in database
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "User not found in database",
+        },
+        { status: 404 }
+      );
+    }
+
     // Read template file from public directory
     const filePath = join(process.cwd(), "public", fileName);
     const fileContent = await readFile(filePath, "utf-8");
@@ -76,7 +91,7 @@ export async function POST(
 
     // Check if user already has questions
     const currentQuestionCount = await prisma.question.count({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
 
     if (currentQuestionCount > 0) {
@@ -103,7 +118,7 @@ export async function POST(
 
     // Get all user's tags
     const userTags = await prisma.tag.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       select: { id: true, name: true },
     });
 
@@ -137,21 +152,39 @@ export async function POST(
         // Get default color for tags (we'll use green as default)
         const defaultColor = "#10B981";
 
-        const createdTags = await tx.tag.createManyAndReturn({
-          data: tagsToCreate.map((tagName) => ({
-            name: tagName,
-            color: defaultColor,
-            description: null,
-            userId: session.user.id,
-          })),
-        });
+        // Create tags one by one to handle duplicates gracefully
+        for (const tagName of tagsToCreate) {
+          try {
+            const createdTag = await tx.tag.create({
+              data: {
+                name: tagName,
+                color: defaultColor,
+                description: null,
+                userId: user.id,
+              },
+            });
 
-        // Add newly created tags to the map
-        createdTags.forEach((tag) => {
-          tagMap.set(tag.name.toLowerCase().trim(), tag.id);
-        });
+            // Add newly created tag to the map
+            tagMap.set(createdTag.name.toLowerCase().trim(), createdTag.id);
+            tagsCreatedCount++;
+          } catch (error) {
+            // Tag might already exist (race condition), try to find it
+            console.log(`Tag "${tagName}" might already exist, fetching...`);
+            const existingTag = await tx.tag.findFirst({
+              where: {
+                name: tagName,
+                userId: user.id,
+              },
+            });
 
-        tagsCreatedCount = createdTags.length;
+            if (existingTag) {
+              tagMap.set(existingTag.name.toLowerCase().trim(), existingTag.id);
+            } else {
+              // Re-throw if it's not a duplicate error
+              throw error;
+            }
+          }
+        }
       }
 
       // Prepare questions with their tag relationships
@@ -165,7 +198,7 @@ export async function POST(
             difficulty: q.difficulty,
             completed: q.completed ?? false,
             starred: q.starred ?? false,
-            userId: session.user.id,
+            userId: user.id,
             tagId: tagId || null, // Will use this to create QuestionTag entries
           };
         })
