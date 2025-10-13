@@ -31,22 +31,68 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
   const completedMutation = useMutation({
     mutationFn: ({ id, completed }: { id: string; completed: boolean }) =>
       toggleQuestionCompleteApi(id, completed),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    onMutate: async ({ id, completed }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ["questions"] });
+
+      // Snapshot the previous value
+      const previousQuestions = queryClient.getQueryData<QuestionDTO[]>([
+        "questions",
+      ]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData<QuestionDTO[]>(["questions"], (old) => {
+        if (!old) return old;
+        return old.map((q) => (q.id === id ? { ...q, completed } : q));
+      });
+
+      // Return context with the previous value for rollback
+      return { previousQuestions };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousQuestions) {
+        queryClient.setQueryData(["questions"], context.previousQuestions);
+      }
       toast.error(error.message || "Failed to update question status");
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
     },
   });
 
   const starredMutation = useMutation({
     mutationFn: ({ id, starred }: { id: string; starred: boolean }) =>
       toggleQuestionStarredApi(id, starred),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    onMutate: async ({ id, starred }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ["questions"] });
+
+      // Snapshot the previous value
+      const previousQuestions = queryClient.getQueryData<QuestionDTO[]>([
+        "questions",
+      ]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData<QuestionDTO[]>(["questions"], (old) => {
+        if (!old) return old;
+        return old.map((q) => (q.id === id ? { ...q, starred } : q));
+      });
+
+      // Return context with the previous value for rollback
+      return { previousQuestions };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback to previous state on error
+      if (context?.previousQuestions) {
+        queryClient.setQueryData(["questions"], context.previousQuestions);
+      }
       toast.error(error.message || "Failed to update starred status");
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
     },
   });
 
@@ -135,9 +181,7 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
             disabled={isCompletedMutating(question.id)}
             className="h-8 w-8 p-0 text-muted-foreground hover:text-green-600"
           >
-            {isCompletedMutating(question.id) ? (
-              <Spinner className="h-5 w-5" />
-            ) : question.completed ? (
+            {question.completed ? (
               <CheckCircle className="h-5 w-5 text-green-600" />
             ) : (
               <Circle className="h-5 w-5" />
@@ -156,13 +200,9 @@ function RenderQuestionsList({ questions }: RenderQuestionsListProps) {
                 : "text-muted-foreground hover:text-yellow-500"
             )}
           >
-            {isStarredMutating(question.id) ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <Star
-                className={cn("h-4 w-4", question.starred && "fill-current")}
-              />
-            )}
+            <Star
+              className={cn("h-4 w-4", question.starred && "fill-current")}
+            />
           </Button>
 
           <div className="flex-1">

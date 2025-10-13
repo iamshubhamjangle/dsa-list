@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchQuestionsApi,
@@ -86,28 +86,91 @@ const Questions = () => {
         tagIds?: string[];
       };
     }) => updateQuestionApi(id, data),
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["questions"] });
+
+      // Snapshot the previous value
+      const previousQuestions = queryClient.getQueryData<QuestionDTO[]>([
+        "questions",
+      ]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData<QuestionDTO[]>(["questions"], (old) => {
+        if (!old) return old;
+        return old.map((q) => {
+          if (q.id === id) {
+            // Fetch tags if tagIds are provided
+            const updatedTags = data.tagIds
+              ? tags?.filter((tag) => data.tagIds?.includes(tag.id)) || q.tags
+              : q.tags;
+            return { ...q, ...data, tags: updatedTags };
+          }
+          return q;
+        });
+      });
+
+      return { previousQuestions };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
       toast.success("Question updated successfully!");
       setEditingQuestion(null);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousQuestions) {
+        queryClient.setQueryData(["questions"], context.previousQuestions);
+      }
       toast.error(error.message || "Failed to update question");
+    },
+    onSettled: () => {
+      // Refetch to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
     },
   });
 
   // Delete question mutation
   const deleteQuestionMutation = useMutation({
     mutationFn: deleteQuestionApi,
+    onMutate: async (questionId: string) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["questions"] });
+
+      // Snapshot the previous value
+      const previousQuestions = queryClient.getQueryData<QuestionDTO[]>([
+        "questions",
+      ]);
+
+      // Optimistically remove the question from cache
+      queryClient.setQueryData<QuestionDTO[]>(["questions"], (old) => {
+        if (!old) return old;
+        return old.filter((q) => q.id !== questionId);
+      });
+
+      return { previousQuestions };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["questions"] });
       toast.success("Question deleted successfully!");
       setDeletingQuestion(null);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousQuestions) {
+        queryClient.setQueryData(["questions"], context.previousQuestions);
+      }
       toast.error(error.message || "Failed to delete question");
     },
+    onSettled: () => {
+      // Refetch to ensure sync with server
+      queryClient.invalidateQueries({ queryKey: ["questions"] });
+    },
   });
+
+  // Sort questions alphabetically by name
+  const sortedQuestions = useMemo(() => {
+    if (!questions) return [];
+    return [...questions].sort((a, b) => a.name.localeCompare(b.name));
+  }, [questions]);
 
   const handleEditClick = (question: QuestionDTO) => {
     setEditingQuestion(question);
@@ -181,7 +244,7 @@ const Questions = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            Questions {questions && `(${questions.length})`}
+            Questions {sortedQuestions && `(${sortedQuestions.length})`}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -191,9 +254,9 @@ const Questions = () => {
                 <Skeleton key={i} className="h-20 w-full" />
               ))}
             </div>
-          ) : questions && questions.length > 0 ? (
+          ) : sortedQuestions && sortedQuestions.length > 0 ? (
             <div className="space-y-3">
-              {questions.map((question) => (
+              {sortedQuestions.map((question) => (
                 <div
                   key={question.id}
                   className="flex items-start justify-between gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
