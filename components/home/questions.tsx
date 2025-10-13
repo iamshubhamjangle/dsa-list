@@ -11,10 +11,8 @@ import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { FileQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TemplateImport from "@/components/home/templateImport";
 
@@ -48,6 +46,16 @@ const Questions = () => {
     staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
 
+  // Seeded random number generator for deterministic shuffling
+  const seededRandom = (seed: number) => {
+    let state = seed;
+    return () => {
+      // Linear Congruential Generator (LCG)
+      state = (state * 1103515245 + 12345) & 0x7fffffff;
+      return state / 0x7fffffff;
+    };
+  };
+
   // Filter and sort questions based on study options
   const processedQuestions = useMemo(() => {
     if (!questions) return [];
@@ -59,11 +67,21 @@ const Questions = () => {
       filtered = filtered.filter((q) => q.starred);
     }
 
-    // Randomize if enabled
+    // Sort alphabetically by name for consistent ordering
+    filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Randomize if enabled (deterministic shuffle)
     if (randomize) {
-      // Fisher-Yates shuffle algorithm
+      // Create a seed from the question IDs for deterministic randomization
+      const seed = filtered.reduce((acc, q) => {
+        return acc + q.id.charCodeAt(0);
+      }, 12345);
+
+      const random = seededRandom(seed);
+
+      // Fisher-Yates shuffle with seeded random
       for (let i = filtered.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(random() * (i + 1));
         [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
       }
     }
@@ -89,8 +107,8 @@ const Questions = () => {
 
   // Check if user has no questions at all (not just filtered)
   const hasNoQuestions = !questions || questions.length === 0;
-  const hasNoFilteredQuestions =
-    processedQuestions && processedQuestions.length === 0;
+  // const hasNoFilteredQuestions =
+  //   processedQuestions && processedQuestions.length === 0;
 
   return (
     <div>
@@ -99,17 +117,17 @@ const Questions = () => {
       ) : (
         <Empty className="border border-dashed">
           <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <FileQuestion />
-            </EmptyMedia>
+            {/* <EmptyMedia variant="icon">
+              <LayoutTemplate />
+            </EmptyMedia> */}
             <EmptyTitle>
               {hasNoQuestions
-                ? "Get Started with Questions"
+                ? "Get Started with Curated Templates"
                 : "No Questions Found"}
             </EmptyTitle>
             <EmptyDescription>
               {hasNoQuestions
-                ? "Import an existing template to quickly populate your question bank with curated DSA problems."
+                ? "Select a template and import!"
                 : starred
                 ? "No starred questions available. Star some questions to see them here."
                 : "No questions match your current filters."}

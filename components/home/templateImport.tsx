@@ -11,7 +11,9 @@ import { QUESTION_TEMPLATES } from "@/lib/templates";
 import { CheckCircle2 } from "lucide-react";
 
 const TemplateImport = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(
+    QUESTION_TEMPLATES[0]?.id || ""
+  );
   const [isImporting, setIsImporting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -71,9 +73,6 @@ const TemplateImport = () => {
     <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
       {/* Template Selection */}
       <div className="w-full space-y-3">
-        <h3 className="text-sm font-medium text-center">
-          Choose a template to get started
-        </h3>
         <div className="flex flex-wrap gap-3 justify-center">
           {QUESTION_TEMPLATES.map((template) => (
             <button

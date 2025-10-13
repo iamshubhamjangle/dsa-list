@@ -124,8 +124,11 @@ For issues or questions:
 
 ### Todo:
 
-- Fix the ordering of tags using additional order column in DB
+- Render the data on manage as table
+  - Allow select/multi-select functionality
+  - Batch delete on multi select
 - req.body must be validated with zod schema
+- Fix the ordering of tags on Home page
 
 ---
 
